@@ -41,10 +41,7 @@ update global variables
 source ~/.bashrc
 ```
 
-install geographiclib dependancy 
-```
-sudo ~/UCLAIR_ws/src/mavros/mavros/scripts/install_geographiclib_datasets.sh
-```
+
 
 
 
