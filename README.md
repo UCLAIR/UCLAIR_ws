@@ -13,7 +13,7 @@ Then, initialize the catkin workspace:
 ```
 mkdir -p ~/catkin_ws/src
 cd ~/UCLAIR_ws
-UCLAIR_was init
+UCLAIR_ws init
 ```
 
 ## Install `mavros` and `mavlink`
@@ -41,11 +41,14 @@ update global variables
 source ~/.bashrc
 ```
 
+## Install `pygeodesy`
+
+```
+pip3 install pygeodesy
+```
 
 
-
-
-## 5. Build instructions
+## Build instructions
 Inside `UCLAIR_ws`, run `catkin build`:
 
 ```
