@@ -12,16 +12,16 @@ pip3 install osrf-pycommon
 Then, initialize the catkin workspace:
 ```
 mkdir -p ~/catkin_ws/src
-cd ~/catkin_ws
-catkin init
+cd ~/UCLAIR_ws
+UCLAIR_was init
 ```
 
 ## Install `mavros` and `mavlink`
 
 Install `mavros` and `mavlink` from source:
 ```
-cd ~/catkin_ws
-wstool init ~/catkin_ws/src
+cd ~/UCLAIR_ws
+wstool init ~/UCLAIR_ws/src
 
 rosinstall_generator --upstream mavros | tee /tmp/mavros.rosinstall
 rosinstall_generator mavlink | tee -a /tmp/mavros.rosinstall
@@ -33,7 +33,7 @@ catkin build
 ```
 Add a line to end of `~/.bashrc` by running the following command:
 ```
-echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
+echo "source ~/UCLAIR_ws/devel/setup.bash" >> ~/.bashrc
 ```
 
 update global variables
@@ -43,28 +43,16 @@ source ~/.bashrc
 
 install geographiclib dependancy 
 ```
-sudo ~/catkin_ws/src/mavros/mavros/scripts/install_geographiclib_datasets.sh
+sudo ~/UCLAIR_ws/src/mavros/mavros/scripts/install_geographiclib_datasets.sh
 ```
 
 
-## Clone IQ Simulation ROS package 
-
-```
-cd ~/catkin_ws/src
-git clone https://https://github.com/jackhau0212/UCL_AIR_ROS/
-```
-Our repository should now be copied to `~/catkin_ws/src/iq_sim/` (don't run this line. This is just saying that if you browse in the file manager, you will see those folders).
-
-run the following to tell gazebo where to look for the iq models 
-```
-echo "GAZEBO_MODEL_PATH=${GAZEBO_MODEL_PATH}:$HOME/catkin_ws/src/iq_sim/models" >> ~/.bashrc
-```
 
 ## 5. Build instructions
-Inside `catkin_ws`, run `catkin build`:
+Inside `UCLAIR_ws`, run `catkin build`:
 
 ```
-cd ~/catkin_ws
+cd ~/UCLAIR_ws
 catkin build
 ```
 update global variables
