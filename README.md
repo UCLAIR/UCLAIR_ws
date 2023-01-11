@@ -48,14 +48,3 @@ pip3 install pygeodesy
 ```
 
 
-## Build instructions
-Inside `UCLAIR_ws`, run `catkin build`:
-
-```
-cd ~/UCLAIR_ws
-catkin build
-```
-update global variables
-```
-source ~/.bashrc
-```
