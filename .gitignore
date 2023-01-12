@@ -55,3 +55,4 @@ src/mavlink
 src/.rosinstall
 src/.rosinstall.bak
 .catkin_tools
+.vscode/
