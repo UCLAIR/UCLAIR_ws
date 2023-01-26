@@ -68,44 +68,36 @@ if __name__ == "__main__":
         # Initialise the Execution class
         mission = Execution()
 
-        while not rospy.is_shutdown():
+        # Establish the connection between FCU and Drone
+        uav.wait4connect()
 
-            # Establish the connection between FCU and Drone
-            uav.wait4connect()
-        
-            # Set mode to GUIDED
-            uav.set_mode("GUIDED")
-        
-            # Wait for GUIDED mode to start
-            uav.wait4start()
+        # Set mode to GUIDED
+        uav.set_mode("GUIDED")
 
-            # Take off
-            uav.takeoff(3)
+        # This loop ensure that the global navigation mission is True
+        while mission.in_global_navigation:
+    
+            # Set speed of 20m/s
+            uav.set_speed(20)
 
             # Publishing current location to global_navigation_node
             data = mission.publish_float64multiarray_data(uav.get_current_location())
             mission.current_global_location_pub.publish(data)
 
-            # # This loop ensure that the global navigation mission is True
-            # while mission.in_global_navigation:
-        
-            #     # Set speed of 20m/s
-            #     uav.set_speed(20)
+            # Setting global destination to desired global waypoint
+            uav.set_global_destination(
+                lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
+                alt= (uav.current_global_position.altitude) - uav.geoid_height(
+                uav.current_global_position.latitude, 
+                uav.current_global_position.longitude)
+            )
 
-            #     # Setting global destination to desired global waypoint
-            #     uav.set_global_destination(
-            #         lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
-            #         alt= (uav.current_global_position.altitude) - uav.geoid_height(
-            #         uav.current_global_position.latitude, 
-            #         uav.current_global_position.longitude)
-            #     )
-
-            #     rospy.loginfo("In Global Waypoing Navigation Mission...")
+            rospy.loginfo("In Global Waypoing Navigation Mission...")
 
             
-            # rospy.loginfo("All gloabl waypoints have successfully been reached")
-            # uav.land()
-            # rospy.loginfo("Proceeding to Landing")
+        rospy.loginfo("All gloabl waypoints have successfully been reached")
+        uav.land()
+        rospy.loginfo("Proceeding to Landing")
 
     except KeyboardInterrupt:
         exit()
