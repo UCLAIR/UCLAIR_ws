@@ -5,17 +5,15 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from navigation_functions import *
-from std_msgs.msg import Float64MultiArray, Bool
+from std_msgs.msg import Float64MultiArray, Bool, Float64
 
 class LocalNavigation:
     def __init__(self):
         self.current_global_location = Float64MultiArray()
         self.obstacle_avoiding = Bool()
+        self.current_compass_heading = Float64()
         self.current_global_waypoint = Float64MultiArray()
-
-        '''
-        self.obstacles = Float64MultiArray()
-        '''
+        self.obstacle_locations = [np.array([40, 50])]
 
         # Obstacle Avoidance constants
         self.K_ATTRACT = 0.1
@@ -55,17 +53,13 @@ class LocalNavigation:
             callback=self.global_waypoint_sub_cb
         )
 
-        # Subscribing
-
-        # (For future purpose)
-        '''
-        self.obstacles_sub = rospy.Subscriber(
-            name="obstacle_position",
-            data_class=Float64MultiArray,
-            queue_size=10,
-            callback=obstacles_sub_cb
+        # Subscribing the global_position/compass_hdg topic to know the compass heading
+        self.current_compass_heading_sub = rospy.Subscriber(
+            name="mavros/global_position/compass_hdg",
+            data_class=Float64,
+            callback=self.current_compass_heading_cb
         )
-        '''
+
 
     # Call back functions
 
@@ -73,12 +67,10 @@ class LocalNavigation:
         self.current_global_location = msg
 
     def global_waypoint_sub_cb(self, msg):
-        self.current_global_waypoint = msg.data
+        self.current_global_waypoint = msg
 
-    '''
-    def obstacles_sub_cb(self, msg):
-        self.obstacles = msg.data
-    '''
+    def current_compass_heading_cb(self, msg):
+        self.current_compass_heading = msg
 
     # Obstacle Avoidance Algorithm
 
@@ -102,7 +94,7 @@ class LocalNavigation:
             return np.zeros_like(position)
 
 
-    def get_next_waypoint(self, position, goal, obstacles, radius):
+    def get_next_waypoint(self, position, goal, obstacles, radius=100):
 
         attractive_force = self.get_attractive_force(position, goal)
 
@@ -118,7 +110,7 @@ class LocalNavigation:
         return next_position
 
 
-    def get_path(self, start, goal,obstacles, radius, num_waypoints=50):
+    def get_path(self, start, goal,obstacles, radius=100, num_waypoints=50):
         
         waypoints = [start]
 
@@ -146,27 +138,34 @@ class LocalNavigation:
             current_position = next_waypoint
 
         return waypoints
-    
 
-    def convert_obstacles_local_to_global_frame(self, obstacles_local_frame):
-
+    def local_xy_to_GPS_coordinates(self, localXY):
+        
         earth_radius = 6378137.0
 
-        obstacles_global_frame = []
+        localXY_x = localXY[0]
+        localXY_y = localXY[1]
 
-        for obs in obstacles_local_frame:
+        localPolar_r = math.sqrt(localXY_x, localXY_y)
+        localPolar_alpha = math.degrees(math.atan2(localXY_x, localXY_y))
 
-            # Coordinate offsets in radians
-            dLat = obs[0]/earth_radius
-            dLon = obs[1]/(earth_radius*math.cos(math.pi*self.current_global_location[0]/180))
+        NEPolar_r = localPolar_r
+        NEPolar_theta = localPolar_alpha + self.current_compass_heading
 
-            # new position in decimal degrees
-            newLat = self.current_global_location[0] + (dLat*180/math.pi)
-            newLon = self.current_global_location[1] + (dLon*180/math.pi)
+        dNorth = NEPolar_r * math.cos(NEPolar_theta * math.pi/180)
+        dEast = NEPolar_r * math.sin(NEPolar_theta * math.pi/180)
 
-            obstacles_global_frame.append([newLat, newLon])
+        current_lat = self.current_global_location.data[0]
+        current_lon = self.current_global_location.data[1]
+        
+        dLat = dNorth/earth_radius
 
-        return obstacles_global_frame
+        dLon = dEast/(earth_radius * math.cos(math.pi * current_lat/180))
+
+        newlat = current_lat + (dLat * 180/math.pi)
+        newlon = current_lon + (dLon * 180/math.pi)
+
+        return np.array([newlat, newlon])
 
 
 if __name__ == "__main__":
@@ -179,7 +178,7 @@ if __name__ == "__main__":
 
         local_path = LocalNavigation()
 
-        while not rospy.is_shutdown():
+        while (not rospy.is_shutdown()):
 
             if len(local_path.current_global_location.data) == 0:
 
@@ -187,9 +186,19 @@ if __name__ == "__main__":
                 rate.sleep()
 
             else:
-                rospy.loginfo(local_path.current_global_location.data)
 
+                # start = np.array(local_path.current_global_location.data)
+                # goal = np.array(local_path.current_global_waypoint.data)
 
+                start = np.array([0, 0])
+
+                goal = np.array([100, 100])
+                
+                path = local_path.get_path(start, goal, local_path.obstacle_locations)
+
+                rospy.loginfo(path)
+
+                rospy.sleep(10)
 
 
 
