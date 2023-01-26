@@ -4,13 +4,10 @@ import colorcode
 def strategy1():
 
     # INPUT BOTTLES DATA.
-    # DATA EXAMPLE
-    # 1: CHAR, COLOR, SHAPE
-    # 2: CHAR, COLOR, SHAPE ...
-
-
+    
 
     # GET FRAME FROM CAMERA
+    # GET CORD OF DRONE WHEN IMAGE WAS TAKEN
 
     # INPUT: FRAME 
     # OUTPUT: BOOL (DETECTED TRUE OR FALSE)
@@ -18,6 +15,8 @@ def strategy1():
 
     # IF DETECTED
     # GET COORD
+        # GET MIDPOINT OF DETECTED THING
+
 
     # CROP AND ZOOM FRAME
 
@@ -26,6 +25,7 @@ def strategy1():
     # RUN COLOR
 
     # STORE SHAPE, CHAR, COLOR, COORD
+    pass
 
 if __name__ == '__main__':
     strategy1()

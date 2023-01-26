@@ -1,14 +1,7 @@
 import cv2
 import os.path
 
-# Create the cropped folder if it doesn't exist
-if not os.path.exists("cropped"):
-    os.makedirs("cropped")
-
-# Find all the image files in the output folder
-image_files = [f for f in os.listdir("output") if os.path.isfile(os.path.join("output", f)) and f.endswith(".jpg")]
-
-for file in image_files:
+def cropmain(frame):
     # Load the images
     image = cv2.imread(os.path.join("output", file))
 
@@ -26,3 +19,11 @@ for file in image_files:
 
     # Save the cropped image to the output folder
     cv2.imwrite("cropped/" + file, cropped_image)
+    
+    return cropped_image
+pass
+
+
+if __name__ == '__main__':
+    cropmain(frame)
+    
