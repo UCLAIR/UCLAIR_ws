@@ -19,6 +19,8 @@ class Execution:
             queue_size=10
         )
 
+        # Publishing 
+
     
         # ROS Subscribers
 
@@ -74,15 +76,21 @@ if __name__ == "__main__":
         # Set mode to GUIDED
         uav.set_mode("GUIDED")
 
+        # Wait for GUIDED mode to start
+        uav.wait4start()
+
+        # Take off
+        uav.takeoff(10)
+
         # This loop ensure that the global navigation mission is True
-        while mission.in_global_navigation:
-    
-            # Set speed of 20m/s
-            uav.set_speed(20)
+        while (mission.in_global_navigation) and (not rospy.is_shutdown()):
 
             # Publishing current location to global_navigation_node
             data = mission.publish_float64multiarray_data(uav.get_current_location())
             mission.current_global_location_pub.publish(data)
+
+            # Set speed of 20m/s
+            uav.set_speed(20)
 
             # Setting global destination to desired global waypoint
             uav.set_global_destination(

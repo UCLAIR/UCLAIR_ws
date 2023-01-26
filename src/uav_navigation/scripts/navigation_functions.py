@@ -11,6 +11,7 @@ from nav_msgs.msg import Odometry
 from mavros_msgs.srv import SetMode, SetModeRequest
 from mavros_msgs.srv import CommandTOL, CommandTOLRequest, CommandLong, CommandLongRequest
 from mavros_msgs.srv import CommandBool, CommandBoolRequest
+from std_msgs.msg import Float64
 
 
 class Navigation:
@@ -18,6 +19,7 @@ class Navigation:
         self.current_state = State()
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
         self.current_local_position = Odometry() # Local coordinates, AGL
+        self.current_compass_heading = Float64()
 
         self.waypoint_local_frame = PoseStamped()
         self.waypoint_global_frame = GeoPoseStamped()
@@ -67,6 +69,13 @@ class Navigation:
             name="mavros/global_position/local",
             data_class=Odometry,
             callback=self.current_local_position_cb
+        )
+
+        # Subscribing the global_position/compass_hdg topic to know the compass heading
+        self.current_compass_heading_sub = rospy.Subscriber(
+            name="mavros/global_position/compass_hdg",
+            data_class=Float64,
+            callback=self.current_compass_heading_cb
         )
 
         
@@ -133,6 +142,10 @@ class Navigation:
         yaw_angle = atan2(2 * (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3))
 
         self.current_heading = degrees(yaw_angle)
+
+    # Global Compass heading
+    def current_compass_heading_cb(self, msg):
+        self.current_compass_heading = msg
 
 
     # Geoid Height Function
