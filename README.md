@@ -14,7 +14,7 @@ Then, initialize the catkin workspace:
 cd
 git clone https://github.com/KhalidAgha20/UCLAIR_ws.git
 cd ~/UCLAIR_ws
-UCLAIR_ws init
+catkin init
 ```
 
 ## Install `mavros` and `mavlink`

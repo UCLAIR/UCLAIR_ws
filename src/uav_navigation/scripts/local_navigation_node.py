@@ -198,9 +198,6 @@ if __name__ == "__main__":
 
                 rospy.loginfo(path)
 
-                rospy.sleep(10)
-
-
 
     except KeyboardInterrupt:
         exit()
