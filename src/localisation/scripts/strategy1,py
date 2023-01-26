@@ -1,1 +1,39 @@
 
+import colorcode
+
+def strategy1():
+
+    # INPUT BOTTLES DATA.
+    # DATA EXAMPLE
+    # 1: CHAR, COLOR, SHAPE
+    # 2: CHAR, COLOR, SHAPE ...
+
+
+
+    # GET FRAME FROM CAMERA
+
+    # INPUT: FRAME 
+    # OUTPUT: BOOL (DETECTED TRUE OR FALSE)
+
+
+    # IF DETECTED
+    # GET COORD
+
+    # CROP AND ZOOM FRAME
+
+    # RUN SHAPE
+    # RUN CHAR
+    # RUN COLOR
+
+    # STORE SHAPE, CHAR, COLOR, COORD
+
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    strategy1()
+    
