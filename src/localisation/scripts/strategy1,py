@@ -27,13 +27,6 @@ def strategy1():
 
     # STORE SHAPE, CHAR, COLOR, COORD
 
-
-
-
-
-
-
-
 if __name__ == '__main__':
     strategy1()
     
