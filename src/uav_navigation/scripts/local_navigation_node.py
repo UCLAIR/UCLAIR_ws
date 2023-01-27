@@ -5,15 +5,18 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from navigation_functions import *
+from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Float64MultiArray, Bool, Float64
 
 class LocalNavigation:
     def __init__(self):
-        self.current_global_location = Float64MultiArray()
+        self.current_global_location = NavSatFix()
         self.obstacle_avoiding = Bool()
         self.current_compass_heading = Float64()
         self.current_global_waypoint = Float64MultiArray()
         self.obstacle_locations = [np.array([40, 50])]
+        self.current_lat = -35.361016
+        self.current_lon = 149.165306
 
         # Obstacle Avoidance constants
         self.K_ATTRACT = 0.1
@@ -39,8 +42,8 @@ class LocalNavigation:
 
         # Subscribing current_global_location topic from uav_execute_node on current GPS coordinate
         self.current_global_location_sub = rospy.Subscriber(
-            name="current_global_location",
-            data_class=Float64MultiArray,
+            name="mavros/global_position/global",
+            data_class=NavSatFix,
             queue_size=10,
             callback=self.current_global_location_sub_cb
         )
@@ -65,6 +68,9 @@ class LocalNavigation:
 
     def current_global_location_sub_cb(self, msg):
         self.current_global_location = msg
+
+        self.current_lat = self.current_global_location.latitude
+        self.current_lon = self.current_global_location.longitude
 
     def global_waypoint_sub_cb(self, msg):
         self.current_global_waypoint = msg
@@ -146,26 +152,52 @@ class LocalNavigation:
         localXY_x = localXY[0]
         localXY_y = localXY[1]
 
-        localPolar_r = math.sqrt(localXY_x, localXY_y)
+        localPolar_r = math.sqrt(localXY_x ** 2 + localXY_y ** 2)
         localPolar_alpha = math.degrees(math.atan2(localXY_x, localXY_y))
 
         NEPolar_r = localPolar_r
-        NEPolar_theta = localPolar_alpha + self.current_compass_heading
+        NEPolar_theta = localPolar_alpha + self.current_compass_heading.data
 
         dNorth = NEPolar_r * math.cos(NEPolar_theta * math.pi/180)
         dEast = NEPolar_r * math.sin(NEPolar_theta * math.pi/180)
 
-        current_lat = self.current_global_location.data[0]
-        current_lon = self.current_global_location.data[1]
+        current_lat = self.current_lat
+        current_lon = self.current_lon
         
         dLat = dNorth/earth_radius
-
-        dLon = dEast/(earth_radius * math.cos(math.pi * current_lat/180))
+        dLon = dEast/(earth_radius * math.cos(math.pi * current_lat/180))       
 
         newlat = current_lat + (dLat * 180/math.pi)
         newlon = current_lon + (dLon * 180/math.pi)
 
         return np.array([newlat, newlon])
+
+    def GPS_coordinates_to_local_xy(self, GPS):
+
+        earth_radius = 6378137.0
+        
+        GPS_lat = GPS.data[0]
+        GPS_lon = GPS.data[1]
+
+        current_lat = self.current_lat
+        current_lon = self.current_lon
+
+        dLat = (GPS_lat - current_lat) * math.pi/180
+        dLon = (GPS_lon - current_lon) * math.pi/180
+
+        dNorth = dLat * earth_radius
+        dEast = dLon * (earth_radius * math.cos(math.pi * current_lat/180))  
+
+        NEPolar_r = math.sqrt((abs(current_lat - GPS_lat) ** 2) + (abs(current_lon - GPS_lon) ** 2)) * 1.113195e5 
+        NEPolar_theta = math.acos(dNorth / NEPolar_r) * (180/math.pi)
+
+        localPolar_r = NEPolar_r
+        localPolar_alpha = NEPolar_theta - self.current_compass_heading.data
+
+        localXY_y = localPolar_r * math.cos(localPolar_alpha * math.pi/180)
+        localXY_x = localPolar_r * math.sin(localPolar_alpha * math.pi/180)
+
+        return np.array([localXY_x, localXY_y])
 
 
 if __name__ == "__main__":
@@ -180,24 +212,26 @@ if __name__ == "__main__":
 
         while (not rospy.is_shutdown()):
 
-            if len(local_path.current_global_location.data) == 0:
+            # start = np.array(local_path.current_global_location.data)
+            # goal = np.array(local_path.current_global_waypoint.data)
 
-                rospy.loginfo("No GPS Coordinates from FCU")
-                rate.sleep()
+            # start = np.array([0, 0])
 
-            else:
+            # goal = np.array([100, 100])
+            
+            # path = local_path.get_path(start, goal, local_path.obstacle_locations)
 
-                # start = np.array(local_path.current_global_location.data)
-                # goal = np.array(local_path.current_global_waypoint.data)
+            rospy.loginfo("Current GPS")
+            rospy.loginfo(local_path.current_lat)
+            rospy.loginfo(local_path.current_lon)
 
-                start = np.array([0, 0])
+            testing = local_path.local_xy_to_GPS_coordinates([10, 10])
+            rospy.loginfo("Obstacle GPS")
+            rospy.loginfo(testing)
 
-                goal = np.array([100, 100])
-                
-                path = local_path.get_path(start, goal, local_path.obstacle_locations)
-
-                rospy.loginfo(path)
-
+            reverse_testing = local_path.GPS_coordinates_to_local_xy(testing)
+            rospy.loginfo("Obstacle Local Frame")
+            rospy.loginfo(reverse_testing)
 
     except KeyboardInterrupt:
         exit()
