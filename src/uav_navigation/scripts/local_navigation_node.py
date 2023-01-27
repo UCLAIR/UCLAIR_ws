@@ -11,12 +11,15 @@ from std_msgs.msg import Float64MultiArray, Bool, Float64
 class LocalNavigation:
     def __init__(self):
         self.current_global_location = NavSatFix()
-        self.obstacle_avoiding = Bool()
         self.current_compass_heading = Float64()
         self.current_global_waypoint = Float64MultiArray()
-        self.obstacle_locations = [np.array([40, 50])]
-        self.current_lat = -35.361016
-        self.current_lon = 149.165306
+        self.current_global_waypoint_lat = float()
+        self.current_global_waypoint_lon = float()
+        self.obstacle_locations = [np.array([-35.36277927, 149.16474174])]
+
+        '''
+        -35.36277927, 149.16474174
+        '''
 
         # Obstacle Avoidance constants
         self.K_ATTRACT = 0.1
@@ -32,7 +35,7 @@ class LocalNavigation:
         )
         
         # Publishing local_waypoints topic with current local navigation waypoint to uav_execute_node
-        self.local_navigation_pub = rospy.Publisher(
+        self.local_waypoints_pub = rospy.Publisher(
             name="local_waypoints",
             data_class=Float64MultiArray,
             queue_size=10
@@ -44,7 +47,6 @@ class LocalNavigation:
         self.current_global_location_sub = rospy.Subscriber(
             name="mavros/global_position/global",
             data_class=NavSatFix,
-            queue_size=10,
             callback=self.current_global_location_sub_cb
         )
 
@@ -52,7 +54,6 @@ class LocalNavigation:
         self.global_waypoint_sub = rospy.Subscriber(
             name="global_waypoint",
             data_class=Float64MultiArray,
-            queue_size=10,
             callback=self.global_waypoint_sub_cb
         )
 
@@ -69,11 +70,8 @@ class LocalNavigation:
     def current_global_location_sub_cb(self, msg):
         self.current_global_location = msg
 
-        self.current_lat = self.current_global_location.latitude
-        self.current_lon = self.current_global_location.longitude
-
     def global_waypoint_sub_cb(self, msg):
-        self.current_global_waypoint = msg
+        self.current_global_waypoint = msg.data
 
     def current_compass_heading_cb(self, msg):
         self.current_compass_heading = msg
@@ -161,8 +159,8 @@ class LocalNavigation:
         dNorth = NEPolar_r * math.cos(NEPolar_theta * math.pi/180)
         dEast = NEPolar_r * math.sin(NEPolar_theta * math.pi/180)
 
-        current_lat = self.current_lat
-        current_lon = self.current_lon
+        current_lat = self.current_global_location.latitude
+        current_lon = self.current_global_location.longitude
         
         dLat = dNorth/earth_radius
         dLon = dEast/(earth_radius * math.cos(math.pi * current_lat/180))       
@@ -176,11 +174,11 @@ class LocalNavigation:
 
         earth_radius = 6378137.0
         
-        GPS_lat = GPS.data[0]
-        GPS_lon = GPS.data[1]
+        GPS_lat = GPS[0]
+        GPS_lon = GPS[1]
 
-        current_lat = self.current_lat
-        current_lon = self.current_lon
+        current_lat = self.current_global_location.latitude
+        current_lon = self.current_global_location.longitude
 
         dLat = (GPS_lat - current_lat) * math.pi/180
         dLon = (GPS_lon - current_lon) * math.pi/180
@@ -199,39 +197,60 @@ class LocalNavigation:
 
         return np.array([localXY_x, localXY_y])
 
+    def get_local_waypoints(self):
+
+        goal_GPS_lat, goal_GPS_lon = self.current_global_waypoint
+
+        goal_GPS = np.array([goal_GPS_lat, goal_GPS_lon])
+
+        start_local_frame = np.array([0, 0])
+        goal_local_frame = self.GPS_coordinates_to_local_xy(goal_GPS)
+
+        obstacles_GPS = self.obstacle_locations
+        obstacles_local_frame = [self.GPS_coordinates_to_local_xy(obstacle_GPS) for obstacle_GPS in obstacles_GPS]
+
+        local_waypoints_local_frame = self.get_path(start_local_frame, goal_local_frame, obstacles_local_frame)
+        local_waypoints_GPS = [self.local_xy_to_GPS_coordinates(local_waypoint_local_frame) for local_waypoint_local_frame in local_waypoints_local_frame]
+
+        local_waypoints_GPS = self.publish_float64multiarray_data(local_waypoints_GPS)
+
+        return local_waypoints_GPS
+
+
+
+    # Convert the data into publisherable data for Float64MultiArray()
+    def publish_float64multiarray_data(self, d):
+        publishing_data = Float64MultiArray()
+
+        publishing_data.data = d
+
+        return publishing_data
+
 
 if __name__ == "__main__":
     try:
         rospy.init_node("local_navigation_node")
 
-        rate = rospy.Rate(10)
-
-        testing_obstacles = [np.array([20, 20])]
-
         local_path = LocalNavigation()
+
+        rate = rospy.Rate(10)
 
         while (not rospy.is_shutdown()):
 
-            # start = np.array(local_path.current_global_location.data)
-            # goal = np.array(local_path.current_global_waypoint.data)
+            rate.sleep()
 
-            # start = np.array([0, 0])
+            if not (len(local_path.obstacle_locations) == 0):
 
-            # goal = np.array([100, 100])
-            
-            # path = local_path.get_path(start, goal, local_path.obstacle_locations)
+                local_path.obstacle_avoiding_pub.publish(True)
 
-            rospy.loginfo("Current GPS")
-            rospy.loginfo(local_path.current_lat)
-            rospy.loginfo(local_path.current_lon)
+                local_waypoints = local_path.get_local_waypoints()
 
-            testing = local_path.local_xy_to_GPS_coordinates([10, 10])
-            rospy.loginfo("Obstacle GPS")
-            rospy.loginfo(testing)
+                rospy.loginfo(local_waypoints)
 
-            reverse_testing = local_path.GPS_coordinates_to_local_xy(testing)
-            rospy.loginfo("Obstacle Local Frame")
-            rospy.loginfo(reverse_testing)
+
+            else:
+                local_path.obstacle_avoiding_pub.publish(False)
+
 
     except KeyboardInterrupt:
         exit()

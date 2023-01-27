@@ -28,7 +28,7 @@ class Execution:
         self.global_waypoint_sub = rospy.Subscriber(
             name="global_waypoint",
             data_class=Float64MultiArray,
-            callback=self.global_waypoint_sub_cb,
+            callback=self.global_waypoint_sub_cb
         )
 
         # Subcribing global_navigation_mission topic from global_navigation_node
@@ -37,6 +37,7 @@ class Execution:
             data_class=Bool,
             callback=self.global_navigation_sub_cb
             )
+
 
 
     # Call back functions
