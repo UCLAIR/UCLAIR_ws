@@ -71,6 +71,11 @@ update global variables
 source ~/.bashrc
 ```
 
+### Start MAVROS
+```
+roslaunch mavros apm2.launch fcu_url:=udp://localhost:14550@
+```
+
 ## Install `pygeodesy`
 
 ```
