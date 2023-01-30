@@ -16,6 +16,9 @@ git clone https://github.com/KhalidAgha20/UCLAIR_ws.git
 cd ~/UCLAIR_ws
 catkin init
 ```
+## Install ArduPilot
+
+
 
 ## Install `mavros` and `mavlink`
 
