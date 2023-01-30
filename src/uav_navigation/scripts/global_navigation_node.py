@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from navigation_functions import *
 from std_msgs.msg import Float64MultiArray, Bool
+from sensor_msgs.msg import NavSatFix
 
 
 class GlobalNavigation:
@@ -15,7 +16,7 @@ class GlobalNavigation:
 
     def __init__(self):
         self.current_waypoint_counter = 0
-        self.current_global_location = Float64MultiArray()
+        self.current_global_location = NavSatFix()
 
 
         # ROS Publishers
@@ -39,11 +40,11 @@ class GlobalNavigation:
 
         # Subscribing current_global_location topic from uav_execute_node on current GPS coordinate
         self.current_global_location_sub = rospy.Subscriber(
-            name="current_global_location",
-            data_class=Float64MultiArray,
-            queue_size=10,
+            name="mavros/global_position/global",
+            data_class=NavSatFix,
             callback=self.current_global_location_sub_cb
         )
+
 
     # Call back functions
 
@@ -99,7 +100,7 @@ if __name__ == "__main__":
             global_path.global_waypoint_pub.publish(current_waypoint)
 
             # Ensure we are receiving current global location from uav_execute_node
-            if len(global_path.current_global_location.data) == 0:
+            if (global_path.current_global_location.latitude == None) and (global_path.current_global_location.longitude == None):
                 rospy.loginfo("No GPS Coordinates from FCU")
                 rate.sleep()
 
@@ -107,8 +108,8 @@ if __name__ == "__main__":
                 
                 # Calculating distance
                 distance = global_path.get_distance(
-                    lat1=global_path.current_global_location.data[0],
-                    lon1=global_path.current_global_location.data[1],
+                    lat1=global_path.current_global_location.latitude,
+                    lon1=global_path.current_global_location.longitude,
                     lat2=global_path.waypoints[global_path.current_waypoint_counter][0],
                     lon2=global_path.waypoints[global_path.current_waypoint_counter][1]
                 )

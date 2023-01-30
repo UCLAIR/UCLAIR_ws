@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import numpy as np
@@ -13,12 +13,12 @@ class LocalNavigation:
         self.current_global_location = NavSatFix()
         self.current_compass_heading = Float64()
         self.current_global_waypoint = Float64MultiArray()
-        self.current_global_waypoint_lat = float()
-        self.current_global_waypoint_lon = float()
-        self.obstacle_locations = [np.array([-35.36277927, 149.16474174])]
+        self.obstacle_locations = [np.array([-35.36241997, 149.16487945])]
+        self.local_waypoint_counter = 0
+        self.in_global_navigation = Bool()
 
         '''
-        -35.36277927, 149.16474174
+        -35.36241997, 149.16487945
         '''
 
         # Obstacle Avoidance constants
@@ -64,6 +64,13 @@ class LocalNavigation:
             callback=self.current_compass_heading_cb
         )
 
+        # Subcribing global_navigation_mission topic from global_navigation_node
+        self.global_navigation_sub = rospy.Subscriber(
+            name="global_navigation_mission",
+            data_class=Bool,
+            callback=self.global_navigation_sub_cb
+            )
+
 
     # Call back functions
 
@@ -76,6 +83,9 @@ class LocalNavigation:
     def current_compass_heading_cb(self, msg):
         self.current_compass_heading = msg
 
+    def global_navigation_sub_cb(self, msg):
+        self.in_global_navigation = msg.data
+
     # Obstacle Avoidance Algorithm
 
     def get_attractive_force(self, position, goal):
@@ -83,7 +93,7 @@ class LocalNavigation:
         return self.K_ATTRACT * (goal - position)
 
 
-    def get_repulsive_force(self, position, obstacle, radius=100):
+    def get_repulsive_force(self, position, obstacle, radius=200):
 
         distance = np.linalg.norm(obstacle - position)
 
@@ -98,7 +108,7 @@ class LocalNavigation:
             return np.zeros_like(position)
 
 
-    def get_next_waypoint(self, position, goal, obstacles, radius=100):
+    def get_next_waypoint(self, position, goal, obstacles, radius=200):
 
         attractive_force = self.get_attractive_force(position, goal)
 
@@ -114,7 +124,7 @@ class LocalNavigation:
         return next_position
 
 
-    def get_path(self, start, goal,obstacles, radius=100, num_waypoints=50):
+    def get_path(self, start, goal,obstacles, radius=200, num_waypoints=50):
         
         waypoints = [start]
 
@@ -141,7 +151,19 @@ class LocalNavigation:
 
             current_position = next_waypoint
 
-        return waypoints
+        minimum_waypoints = []
+
+        for waypoint in waypoints:
+            for obstacle in obstacles:
+
+                if np.linalg.norm(waypoint - obstacle) < 50:
+                    a = waypoint.tolist()
+                    minimum_waypoints.append(a)
+                    break
+
+        minimum_waypoints.append(goal.tolist())
+
+        return minimum_waypoints
 
     def local_xy_to_GPS_coordinates(self, localXY):
         
@@ -206,17 +228,31 @@ class LocalNavigation:
         start_local_frame = np.array([0, 0])
         goal_local_frame = self.GPS_coordinates_to_local_xy(goal_GPS)
 
+        # testing
         obstacles_GPS = self.obstacle_locations
         obstacles_local_frame = [self.GPS_coordinates_to_local_xy(obstacle_GPS) for obstacle_GPS in obstacles_GPS]
 
         local_waypoints_local_frame = self.get_path(start_local_frame, goal_local_frame, obstacles_local_frame)
         local_waypoints_GPS = [self.local_xy_to_GPS_coordinates(local_waypoint_local_frame) for local_waypoint_local_frame in local_waypoints_local_frame]
 
-        local_waypoints_GPS = self.publish_float64multiarray_data(local_waypoints_GPS)
-
         return local_waypoints_GPS
+    
+    # Getting distance between current location to destination 
+    def get_distance(self, lat1, lon1, lat2, lon2):
+        """
+        Calculates the distance in metres from current location to desired location
 
-
+        Args:
+            lat1 (Float): latitude of current location
+            lon2 (Float): longitude of current location
+            lat2 (Float): latitude of desired location
+            lon2 (Float): longitude of desired location
+        """
+        
+        dlat = abs(lat1 - lat2)
+        dlon = abs(lon1 - lon2)
+        
+        return sqrt((dlat * dlat) + (dlon * dlon)) * 1.113195e5
 
     # Convert the data into publisherable data for Float64MultiArray()
     def publish_float64multiarray_data(self, d):
@@ -235,22 +271,46 @@ if __name__ == "__main__":
 
         rate = rospy.Rate(10)
 
-        while (not rospy.is_shutdown()):
+        while (not rospy.is_shutdown()) and (local_path.in_global_navigation):
+
+            if not (type(local_path.current_global_waypoint) == tuple):
+                rospy.loginfo("No Global Waypoints from global_navigation_node")
+                rate.sleep()
+                continue
 
             rate.sleep()
 
-            if not (len(local_path.obstacle_locations) == 0):
-
-                local_path.obstacle_avoiding_pub.publish(True)
+            if len(local_path.obstacle_locations) > 0:
 
                 local_waypoints = local_path.get_local_waypoints()
 
-                rospy.loginfo(local_waypoints)
+                rospy.loginfo("Number of Local Waypoints: {}".format(len(local_waypoints)))
 
+                if local_path.local_waypoint_counter + 1 > len(local_waypoints):
+                    rospy.loginfo("Successfully Navigated All Local Waypoints")
+                    local_path.obstacle_avoiding_pub.publish(False)
+                    continue
+
+                local_path.obstacle_avoiding_pub.publish(True)
+                publihsing_local_waypoints = local_path.publish_float64multiarray_data(local_waypoints[local_path.local_waypoint_counter])
+
+                local_path.local_waypoints_pub.publish(publihsing_local_waypoints)
+
+                distance_to_next_local_waypoint = local_path.get_distance(
+                    local_path.current_global_location.latitude, local_path.current_global_location.longitude,
+                    local_waypoints[local_path.local_waypoint_counter][0], local_waypoints[local_path.local_waypoint_counter][1]
+                    )
+                rospy.loginfo("Distance to local waypoint {}: {}m".format(local_path.local_waypoint_counter+1, distance_to_next_local_waypoint))
+                
+                if distance_to_next_local_waypoint < 0.5:
+                    local_path.local_waypoint_counter += 1
 
             else:
+                rospy.loginfo("No Obstacles")
                 local_path.obstacle_avoiding_pub.publish(False)
+                local_path.local_waypoint_counter = 0
 
+        rospy.loginfo("Stopping Global Waypoint Navigation")
 
     except KeyboardInterrupt:
         exit()

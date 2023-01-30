@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from math import atan2, pow, sqrt, degrees, radians, sin, cos, asin
@@ -147,31 +147,24 @@ class Navigation:
     def current_compass_heading_cb(self, msg):
         self.current_compass_heading = msg
 
-
+    
     # Geoid Height Function
     def geoid_height(self, lat, lon):
-       """
-       Calculates AMSL to ellipsoid coversion offset.
-       Uses EGM96 data with 5' grid and cubic interpolation.
-       The value returned can help convert from metres above 
-       mean sea level (AMSL) to meters above the WGS84 ellipsoid.
+        """
+        Calcualtes AMSL to epplipsoid conversion offset.
+        Uses EGM96 data with 5' grid and cubic interpolation.
+        The value returned can help convert from metres above
+        mean sea level (AMSL) to meters above the WGS84 ellipsoid.
 
-       If you want to go from AMSL to ellipsoid height, add the return value.
+        If you want to go from AMSL to ellipsoid height, add the return value.
 
-       To go from ellipsoid height to AMSL, subtract the return value.
+        To go from ellipsoid height to AMSL, subtract the return value.
+        """
+        _egm96 = GeoidPGM(
+            '/usr/share/GeographicLib/geoids/egm96-5.pgm', kind=-3
+        )
 
-       Args:
-            lat (Float): Latitude of location
-            lon (Float): Longitude of location
-
-        Return:
-            the difference bewteen AMSL and WGS84
-       """
-       _egm96 = GeoidPGM(
-           '/usr/share/GeographicLib/geoids/egm96-5.pgm', kind=-3)
-
-       return _egm96.height(lat, lon)
-
+        return _egm96.height(lat, lon)
 
     # Wait for Connection with FCU function
     def wait4connect(self):
@@ -462,7 +455,7 @@ class Navigation:
         Checks if the waypoint is reached with the given tolerance
 
         Args:
-            pos_tol (Float): Position tolerance is set to 0.1m
+            pos_tol (Float): Position tolerance is set to 0.5m
 
         Returns:
             True: Waypoint reached successfully

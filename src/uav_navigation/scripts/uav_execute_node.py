@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from navigation_functions import *
@@ -9,17 +9,10 @@ class Execution:
     def __init__(self):
         self.current_global_waypoint = Float64MultiArray()
         self.in_global_navigation = Bool()
+        self.in_local_navigation = Bool()
+        self.current_local_waypoint = Float64MultiArray()
 
         # ROS Publishers
-
-        # Publishing current_global_location topic to global_navigation_node
-        self.current_global_location_pub = rospy.Publisher(
-            name="current_global_location",
-            data_class=Float64MultiArray,
-            queue_size=10
-        )
-
-        # Publishing 
 
     
         # ROS Subscribers
@@ -38,6 +31,19 @@ class Execution:
             callback=self.global_navigation_sub_cb
             )
 
+        # Subscribing obstacle_avoiding topic from local_navigation_node
+        self.obstacle_avoiding_sub = rospy.Subscriber(
+            name="obstacle_avoiding",
+            data_class=Bool,
+            callback=self.obstacle_avoiding_sub_cb
+        )
+
+        # Subscribing local_waypoints topic with current local navigation waypoints from local_navigation_node
+        self.local_waypoints_sub = rospy.Subscriber(
+            name="local_waypoints",
+            data_class=Float64MultiArray,
+            callback=self.local_waypoints_sub_cb
+        )
 
 
     # Call back functions
@@ -45,9 +51,14 @@ class Execution:
     def global_waypoint_sub_cb(self, msg):
         self.current_global_waypoint = msg.data
 
-
     def global_navigation_sub_cb(self, msg):
         self.in_global_navigation = msg.data
+
+    def obstacle_avoiding_sub_cb(self, msg):
+        self.in_local_navigation = msg.data
+
+    def local_waypoints_sub_cb(self, msg):
+        self.current_local_waypoint = msg.data
 
 
     # Convert the data into publisherable data for Float64MultiArray()
@@ -83,27 +94,37 @@ if __name__ == "__main__":
         # Take off
         uav.takeoff(10)
 
+        rate = rospy.Rate(10)
+
         # This loop ensure that the global navigation mission is True
         while (mission.in_global_navigation) and (not rospy.is_shutdown()):
-
-            # Publishing current location to global_navigation_node
-            data = mission.publish_float64multiarray_data(uav.get_current_location())
-            mission.current_global_location_pub.publish(data)
-
-            # Set speed of 20m/s
-            uav.set_speed(20)
-
-            # Setting global destination to desired global waypoint
-            uav.set_global_destination(
-                lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
-                alt= (uav.current_global_position.altitude) - uav.geoid_height(
-                uav.current_global_position.latitude, 
-                uav.current_global_position.longitude)
-            )
-
-            rospy.loginfo("In Global Waypoing Navigation Mission...")
-
             
+            rate.sleep()
+
+            if mission.in_local_navigation:
+                rospy.loginfo("In Local Waypoint Navigation...")
+                next_local_wayppint = mission.current_local_waypoint
+                uav.set_global_destination(
+                    lat=next_local_wayppint[0], lon=next_local_wayppint[1],
+                    alt= (uav.current_global_position.altitude) - uav.geoid_height(
+                        uav.current_global_position.latitude, 
+                        uav.current_global_position.longitude)
+                )
+                continue
+            else:
+                rospy.loginfo("In Global Waypoint Navigation Mission...")
+
+                # Set speed of 20m/s
+                uav.set_speed(20)
+
+                # Setting global destination to desired global waypoint
+                uav.set_global_destination(
+                    lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
+                    alt= (uav.current_global_position.altitude) - uav.geoid_height(
+                        uav.current_global_position.latitude, 
+                        uav.current_global_position.longitude)
+                )
+        
         rospy.loginfo("All gloabl waypoints have successfully been reached")
         uav.land()
         rospy.loginfo("Proceeding to Landing")
