@@ -1,3 +1,0 @@
-[submodule "src/yolov5"]
-	path = src/yolov5
-	url = https://github.com/KhalidAgha20/yolov5.git
