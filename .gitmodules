@@ -1,0 +1,3 @@
+[submodule "src/detection_msgs"]
+	path = src/detection_msgs
+	url = https://github.com/mats-robotics/detection_msgs.git
