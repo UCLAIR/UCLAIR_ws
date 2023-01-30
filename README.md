@@ -18,7 +18,7 @@ catkin init
 ```
 ## Install ArduPilot
 
-# Clone ArduPilot
+### Clone ArduPilot
 In home directory:
 ```
 cd ~
@@ -33,13 +33,13 @@ Tools/environment_install/install-prereqs-ubuntu.sh -y
 . ~/.profile
 ```
 
-# Checkout Latest Copter Build
+### Checkout Latest Copter Build
 ```
 git checkout Copter-4.3.2
 git submodule update --init --recursive
 ```
 
-# Run SITL
+### Run SITL
 ```
 cd ~/ardupilot/ArduCopter
 sim_vehicle.py -w
