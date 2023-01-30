@@ -18,6 +18,32 @@ catkin init
 ```
 ## Install ArduPilot
 
+# Clone ArduPilot
+In home directory:
+```
+cd ~
+sudo apt install git
+git clone https://github.com/ArduPilot/ardupilot.git
+cd ardupilot
+```
+
+#Install dependencies
+```
+Tools/environment_install/install-prereqs-ubuntu.sh -y
+. ~/.profile
+```
+
+# Checkout Latest Copter Build
+```
+git checkout Copter-4.3.2
+git submodule update --init --recursive
+```
+
+# Run SITL
+```
+cd ~/ardupilot/ArduCopter
+sim_vehicle.py -w
+```
 
 
 ## Install `mavros` and `mavlink`
