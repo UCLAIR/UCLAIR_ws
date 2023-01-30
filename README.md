@@ -78,8 +78,10 @@ roslaunch mavros apm2.launch fcu_url:=udp://localhost:14550@
 
 ## Install `pygeodesy`
 
+You need to install pygeodesy in python 2
+
 ```
-pip3 install pygeodesy
+pip2 install pygeodesy
 ```
 
 
