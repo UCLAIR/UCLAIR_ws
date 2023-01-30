@@ -1,0 +1,6 @@
+[submodule "detection_msgs"]
+	path = detection_msgs
+	url = https://github.com/KhalidAgha20/detection_msgs
+[submodule "yolov5_ros"]
+	path = yolov5_ros
+	url = https://github.com/KhalidAgha20/yolov5_ros
