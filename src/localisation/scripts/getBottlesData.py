@@ -30,7 +30,6 @@ def getBottlesData():
     print("Shapes: ",shape_list)
 
     return letter_list,color_list,shape_list
-pass
 
 
 if __name__ == '__main__':

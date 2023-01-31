@@ -4,6 +4,7 @@
 import rospy
 from sensor_msgs.msg import Image
 import cv2
+import colour
 from cv_bridge import CvBridge
 global frame
 
@@ -34,7 +35,8 @@ def strategy1():
 
     # INPUT: FRAME 
     # OUTPUT: BOOL (DETECTED TRUE OR FALSE)
-
+    colors = colordetected(frame)
+    
 
 
     # IF DETECTED
