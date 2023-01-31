@@ -1,7 +1,8 @@
+import os
 
 def getBottlesData():
     # Open the file and read its contents
-    with open("BOTTLESDATA.txt", "r") as file:
+    with open("/home/uclair/UCLAIR_ws/src/localisation/scripts/BOTTLESDATA.txt", "r") as file:
         data = file.readlines()
 
     # Initialize empty lists to store the data
@@ -30,9 +31,3 @@ def getBottlesData():
     print("Shapes: ",shape_list)
 
     return letter_list,color_list,shape_list
-pass
-
-
-if __name__ == '__main__':
-    getBottlesData()
-    
