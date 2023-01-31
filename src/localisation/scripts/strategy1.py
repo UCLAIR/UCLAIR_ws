@@ -4,7 +4,7 @@
 import rospy
 from sensor_msgs.msg import Image
 import cv2
-import colour
+from colour import colordetected
 from cv_bridge import CvBridge
 global frame
 
