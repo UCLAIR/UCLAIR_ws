@@ -1,20 +1,3 @@
-import cv2
-from getBottlesData import color_list
-
-# Dictionary of possible colours listed in SUAS rules
-colours = {
-    'blue': ((90, 50, 70), (128, 255, 255)),
-    'red': ((0, 150, 150), (179, 255, 255)),
-    'grey': ((0, 0, 0), (178, 53, 185)),
-    'green': ((36, 50, 70), (94, 255, 255)),
-    'yellow': ((25, 50, 70), (35, 255, 255)),
-    'purple': ((20, 0, 0), (179, 255, 80)),
-    'orange': ((0, 139, 107), (20, 255, 255)),
-    'brown': ((10, 100, 20), (20, 255, 200)),
-    'white': ((0, 0, 180), (255, 30, 255)),
-    'black': ((0, 0, 0), (180, 255, 30))
-}
-
 
 def colordetected(frame):
     user_input = color_list
@@ -75,3 +58,10 @@ def colordetected(frame):
 
     if cv2.countNonZero(final_mask) > 0:
         return True
+
+    return midpoints
+
+
+if __name__ = '__main__':
+
+    colordetected()
