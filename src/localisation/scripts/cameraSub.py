@@ -20,6 +20,5 @@ if __name__ == "__main__":
     bridge = CvBridge()
     rospy.Subscriber("/camera", Image, callback_frame)
     rospy.spin()
-    #pub = rospy.Publisher('/yolov5', PoseStamped, queue_size=10)
 
 
