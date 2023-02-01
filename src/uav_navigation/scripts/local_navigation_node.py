@@ -310,7 +310,7 @@ if __name__ == "__main__":
                 local_path.obstacle_avoiding_pub.publish(False)
                 local_path.local_waypoint_counter = 0
 
-        rospy.loginfo("Stopping Global Waypoint Navigation")
+        rospy.loginfo("Stopping Local Waypoint Navigation")
 
     except KeyboardInterrupt:
         exit()
