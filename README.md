@@ -78,10 +78,10 @@ roslaunch mavros apm2.launch fcu_url:=udp://localhost:14550@
 
 ## Install `pygeodesy`
 
-You need to install pygeodesy in python 2
+You need to install pygeodesy. The dependencies you need: geographiclib 1.52, GeodSolve 1.51, numpy 1.19.2 and scipy 1.5.2
 
 ```
-pip2 install pygeodesy
+pip3 install pygeodesy
 ```
 
 

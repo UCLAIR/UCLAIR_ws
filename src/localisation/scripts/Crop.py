@@ -1,9 +1,9 @@
 import cv2
-import os.path
+
 
 def cropmain(frame):
     # Load the images
-    image = cv2.imread(os.path.join("output", file))
+    image = cv2.imread(frame)
 
     # Convert the image to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -17,13 +17,4 @@ def cropmain(frame):
     # Crop the image to the bounding box
     cropped_image = image[y:y + h, x:x + w]
 
-    # Save the cropped image to the output folder
-    cv2.imwrite("cropped/" + file, cropped_image)
-    
     return cropped_image
-pass
-
-
-if __name__ == '__main__':
-    cropmain(frame)
-    

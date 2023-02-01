@@ -1,5 +1,0 @@
-"A", Orange, Star
-"2", Blue, Quarter Circle
-"M", Red, Square
-"I", Green, Trapezoid
-"L", Purple, Hexagon
