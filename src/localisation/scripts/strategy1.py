@@ -30,9 +30,7 @@ def strategy1(frame):
 
     # INPUT: FRAME 
     # OUTPUT: BOOL (DETECTED TRUE OR FALSE)
-
-
-
+    
 
     # IF DETECTED
     # GET COORD

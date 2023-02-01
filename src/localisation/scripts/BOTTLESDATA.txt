@@ -1,5 +1,5 @@
-"A", Orange, Star
-"2", Blue, Quarter Circle
-"M", Red, Square
-"I", Green, Trapezoid
-"L", Purple, Hexagon
+Orange, "A", Ora-nge, Star
+Orange, "2", Blue, Quarter Circle
+Orange, "M", Red, Square
+Orange, "I", Green, Trapezoid
+Orange, "L", Purple, Hexagon
