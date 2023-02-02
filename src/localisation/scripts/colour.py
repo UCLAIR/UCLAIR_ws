@@ -1,7 +1,8 @@
 import cv2
+import numpy as np
 from getBottlesData import color_list
 
-# Dictionary of possible colours listed in SUAS rules
+# Dictionary of possible colors listed in SUAS rules
 colours = {
     'blue': ((90, 50, 70), (128, 255, 255)),
     'red': ((0, 150, 150), (179, 255, 255)),
@@ -16,62 +17,39 @@ colours = {
 }
 
 
-def colordetected(frame):
-    user_input = color_list
+def colourdetected(frame):
 
-    image = cv2.imread(frame)
+    img_name = frame
 
-    # Creating copy of image
-    original = image.copy()
+    # Read image
+    image = cv2.imread(img_name)
 
-    # Conv to HSV colour space
+    # Convert to HSV color space
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    colours_mask = []
-
-    # Masking image
-    for colour in user_input:
-        lower, upper = colours[colour.strip()]
-
-        mask = cv2.inRange(image, lower, upper)
-
-        colours_mask.append(mask)
-
-    final_mask = colours_mask[0]
-
-    for i in range(1, len(colours_mask)):
-        final_mask = cv2.bitwise_or(final_mask, colours_mask[i])
-
-    # Finds contours of shape with same colour
-    cnts = cv2.findContours(final_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    # User choice of color to recognize/filter
+    user_input = color_list
 
     midpoints = []
 
-    # Draws bounding boxes on original image
-    for c in cnts:
+    # Loop through all the selected colors
+    for color in user_input:
+        lower, upper = colours[color.strip().lower()]
+        # Create a mask for the selected color
+        mask = cv2.inRange(image, np.array(lower), np.array(upper))
+        # Morphological operations to remove noise and fill small holes
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5, 5), np.uint8))
+        # Find contours in the mask
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours:
+            # Calculate the center of the contour
+            M = cv2.moments(cnt)
+            if M["m00"] > 0:
+                area = cv2.contourArea(cnt)
+                if area > 2000:
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
 
-        # Calculate the midpoint of the contour
-        M = cv2.moments(c)
+                    midpoints.append(((cX, cY), color))
 
-        if M["m00"] > 0:
-
-            area = cv2.contourArea(c)
-
-            if area > 1000:
-
-                cv2.drawContours(original, [c], -1, (0, 0, 255), 5)
-
-                midpoint = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
-                if midpoint[0] != 0 and midpoint[1] != 0:
-                    midpoints.append(midpoint)
-
-    # Fills shape made from contour
-    cv2.fillPoly(final_mask, cnts, (255, 255, 255))
-
-    # Check if final_mask has any non-zero values
-
-    if cv2.countNonZero(final_mask) > 0:
-        return True
+                    print(midpoints)
