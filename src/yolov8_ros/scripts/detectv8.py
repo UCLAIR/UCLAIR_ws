@@ -13,7 +13,7 @@ from detection_msgs.msg import BoundingBox, BoundingBoxes
 class Yolov8:
     def __init__(self):
         self.model = YOLO('yolov8n.pt')
-        self.sub = rospy.Subscriber("/webcam/image_raw", Image, self.get_image)
+        self.sub = rospy.Subscriber("camera_raw", Image, self.get_image)
         self.pred_pub = rospy.Publisher('publisss', BoundingBoxes, queue_size = 10)
 
     def get_image(self, data):
