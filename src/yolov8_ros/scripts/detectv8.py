@@ -25,7 +25,7 @@ class Yolov8:
         BB.header = data.header
         BB.image_header = data.header
         
-        for r in res:
+        for r in self.res:
             x = 0
             for xyxy in r.boxes.xyxy :
                 bb = BoundingBox()
@@ -33,9 +33,9 @@ class Yolov8:
                 bb.ymin = int(xyxy[1])
                 bb.xmax = int(xyxy[2])
                 bb.ymax = int(xyxy[3])
-                bb.conf = int(r.boxes.conf[x])
+                bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
-                bb.Class = model.names[int(cls)]
+                bb.Class = self.model.names[int(cls)]
                 x = x + 1
                 BB.bounding_boxes.append(bb)
                 
@@ -46,7 +46,7 @@ class Yolov8:
     def yolo(self,x):
         #model = YOLO('yolov8n.pt')
 
-        res = self.model.predict(
+        self.res = self.model.predict(
             source = x,
             conf = 0.25,
             show = True
