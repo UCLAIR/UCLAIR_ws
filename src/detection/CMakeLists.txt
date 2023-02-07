@@ -109,7 +109,7 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
-catkin_install_python(PROGRAMS scripts/subscriber_node.py
+catkin_install_python(PROGRAMS scripts/lidar_detection_node.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
                       )
 
