@@ -10,7 +10,7 @@ def listener():
     rospy.init_node("testing")
 
     rospy.Subscriber(
-        name="local_waypoints",
+        name="/osbtacles_r",
         data_class=Float64MultiArray,
         callback=callback
     )
