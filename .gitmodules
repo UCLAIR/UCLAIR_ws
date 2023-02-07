@@ -1,3 +1,0 @@
-[submodule "src/detection_msgs"]
-	path = src/detection_msgs
-	url = https://github.com/KhalidAgha20/detection_msgs
