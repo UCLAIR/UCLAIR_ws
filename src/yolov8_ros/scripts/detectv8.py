@@ -6,6 +6,7 @@ from cv_bridge import CvBridge
 from ultralytics import YOLO
 from sensor_msgs.msg import Image, CompressedImage
 from detection_msgs.msg import BoundingBox, BoundingBoxes
+from geographic_msgs.msg import GeoPoseStamped, GeoPoint
 import math
 
 
@@ -15,6 +16,8 @@ class Yolov8:
         self.model = YOLO('yolov8n.pt')
         self.sub = rospy.Subscriber("camera_raw", Image, self.get_image)
         self.pred_pub = rospy.Publisher('publisss', BoundingBoxes, queue_size = 10)
+        
+        
         self.fx = 347.9976
         self.fy = 347.9976
         self.cx = 320
@@ -57,13 +60,12 @@ class Yolov8:
             show = True
         )
 
-    def localisation(self,x1,y1,x2,y2,long_drone,lat_drone):
+    def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
         #https://snehilsanyal.github.io/files/paper1.pdf
         x_center = int((xyxy[0] + xyxy[2])/2)
         y_center = int((xyxy[1] + xyxy[3])/2)
-        dist = 1000 #in mm
-        X = dist*(x_center - cx)/fx
-        Y = dist*(y_center - cy)/fy
+        X = alt_drone*(x_center - cx)/fx
+        Y = alt_drone*(y_center - cy)/fy
         
         b = math.atan(abs(X/Y))
         s = math.sqrt(math.pow(X,2)+math.pow(Y,2))
