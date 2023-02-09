@@ -4,19 +4,29 @@ import rospy
 import cv2
 from cv_bridge import CvBridge
 from ultralytics import YOLO
-from sensor_msgs.msg import Image, CompressedImage
+from sensor_msgs.msg import Image, CompressedImage, NavSatFix
 from detection_msgs.msg import BoundingBox, BoundingBoxes
 from geographic_msgs.msg import GeoPoseStamped, GeoPoint
 import math
+from pygeodesy.geoids import GeoidPGM
 
 
 
 class Yolov8:
     def __init__(self):
         self.model = YOLO('yolov8n.pt')
-        self.sub = rospy.Subscriber("camera_raw", Image, self.get_image)
+        self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
+
+        # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
+        # The altitude is WGS84 Ellipsoid
+        self.current_global_position_sub = rospy.Subscriber(
+            name="mavros/global_position/global",
+            data_class=NavSatFix,
+            queue_size=10,
+            callback=self.current_global_position_cb
+        )
+        self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
         self.pred_pub = rospy.Publisher('publisss', BoundingBoxes, queue_size = 10)
-        
         
         self.fx = 347.9976
         self.fy = 347.9976
