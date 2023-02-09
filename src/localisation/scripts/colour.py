@@ -46,7 +46,7 @@ def colourdetected(frame):
             M = cv2.moments(cnt)
             if M["m00"] > 0:
                 area = cv2.contourArea(cnt)
-                if area > 2000:
+                if area > 1:
                     cX = int(M["m10"] / M["m00"])
                     cY = int(M["m01"] / M["m00"])
 
