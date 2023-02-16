@@ -14,8 +14,8 @@ def talker():
 	print(cap.isOpened())
 	bridge = CvBridge()
 	
-	pub = rospy.Publisher('/camera',Image,queue_size = 1)
-	rospy.init_node('image',anonymous = False)
+	pub = rospy.Publisher('/camera_raw',Image,queue_size = 1)
+	rospy.init_node('webcam',anonymous = False)
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown():
 		ret,frame = cap.read()
