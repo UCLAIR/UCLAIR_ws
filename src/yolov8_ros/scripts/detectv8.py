@@ -16,7 +16,9 @@ class Yolov8:
     def __init__(self):
         self.model = YOLO('yolov8n.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
-
+        self.long = float()
+        self.lat = float()
+        self.alt = float()
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
         self.current_global_position_sub = rospy.Subscriber(
@@ -25,7 +27,9 @@ class Yolov8:
             queue_size=10,
             callback=self.current_global_position_cb
         )
-        self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
+        
+        #self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
+        self.sub = rospy.Subscriber("/webcam/image_raw",Image, self.get_image)
         self.pred_pub = rospy.Publisher('publisss', BoundingBoxes, queue_size = 10)
         
         self.fx = 347.9976
@@ -50,7 +54,7 @@ class Yolov8:
                 bb.ymin = int(xyxy[1])
                 bb.xmax = int(xyxy[2])
                 bb.ymax = int(xyxy[3])
-                bb.long, bb.lat = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax)
+                # bb.long, bb.lat = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax)
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
                 bb.Class = self.model.names[int(cls)]
@@ -70,6 +74,7 @@ class Yolov8:
             show = True
         )
 
+    '''
     def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
         #https://snehilsanyal.github.io/files/paper1.pdf
         x_center = int((xyxy[0] + xyxy[2])/2)
@@ -88,14 +93,26 @@ class Yolov8:
         long = long_drone + deltalong
         lat = lat_drone + deltalat
 
-        return long, lat
+        return long, lat   
+    '''
+    
+    def current_global_position_cb(self, msg):
+        self.long = msg.longitude
+        self.lat = msg.latitude
+        self.alt = msg.altitude
 
 
 if __name__ == "__main__":
     rospy.init_node('yolov8')
     
     RESULTS = Yolov8()
-    rospy.spin()
+    
+    rate = rospy.Rate(10)
+        
+    while not rospy.is_shutdown():
+        rospy.loginfo(RESULTS.long)
+        rospy.loginfo(RESULTS.lat)
+        rospy.loginfo(RESULTS.alt)
 
 
 
