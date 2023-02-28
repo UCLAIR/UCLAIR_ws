@@ -1,0 +1,8 @@
+<launch>
+    <arg name="source" default="/camera_raw"/>
+
+    <node pkg="yolov8_ros" name="yolo" type="detectv8.py" output="screen">
+        <param name="source" value="$(arg source)"/>
+    </node>
+    <!-- <include file="$(find camera_launch)/launch/d435.launch"/> -->
+</launch>
