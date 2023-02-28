@@ -31,3 +31,5 @@ int64 xmax
 int64 ymax
 float64 long
 float64 lat
+float64 xDISTANCE
+float64 yDISTANCE

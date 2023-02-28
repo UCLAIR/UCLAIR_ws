@@ -14,13 +14,15 @@ from pygeodesy.geoids import GeoidPGM
 
 class Yolov8:
     def __init__(self):
+        self.source = rospy.get_param("~source")
         self.model = YOLO('yolov8n.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
-        self.long = float()
-        self.lat = float()
-        self.alt = float()
+        self.longitude = float()
+        self.latitude = float()
+        self.altitude = float()
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
+        
         self.current_global_position_sub = rospy.Subscriber(
             name="mavros/global_position/global",
             data_class=NavSatFix,
@@ -28,9 +30,10 @@ class Yolov8:
             callback=self.current_global_position_cb
         )
         
+        
         #self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
-        self.sub = rospy.Subscriber("/webcam/image_raw",Image, self.get_image)
-        self.pred_pub = rospy.Publisher('publisss', BoundingBoxes, queue_size = 10)
+        self.sub = rospy.Subscriber(self.source,Image, self.get_image)
+        self.pred_pub = rospy.Publisher('BoundingBoxes', BoundingBoxes, queue_size = 10)
         
         self.fx = 347.9976
         self.fy = 347.9976
@@ -39,14 +42,13 @@ class Yolov8:
 
     def get_image(self, data):
         bridge = CvBridge()
-        self.im = bridge.imgmsg_to_cv2(data, desired_encoding="bgr8")
-        self.yolo(self.im)
+        self.image = bridge.imgmsg_to_cv2(data, desired_encoding="bgr8")
+        self.yolo(self.image)
         
         BB = BoundingBoxes()
         BB.header = data.header
-        BB.image_header = data.header
         
-        for r in self.res:
+        for r in self.results:
             x = 0
             for xyxy in r.boxes.xyxy :
                 bb = BoundingBox()
@@ -54,7 +56,12 @@ class Yolov8:
                 bb.ymin = int(xyxy[1])
                 bb.xmax = int(xyxy[2])
                 bb.ymax = int(xyxy[3])
-                # bb.long, bb.lat = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax)
+                try:
+                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
+                                                                                      self.longitude,self.latitude,self.latitude)
+                except:
+                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
+                                                                                      5,5,5)
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
                 bb.Class = self.model.names[int(cls)]
@@ -65,22 +72,19 @@ class Yolov8:
 
                 
 
-    def yolo(self,x):
-        #model = YOLO('yolov8n.pt')
-
-        self.res = self.model.predict(
-            source = x,
+    def yolo(self, video_source):
+        self.results = self.model.predict(
+            source = video_source,
             conf = 0.25,
             show = True
         )
 
-    '''
     def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
         #https://snehilsanyal.github.io/files/paper1.pdf
-        x_center = int((xyxy[0] + xyxy[2])/2)
-        y_center = int((xyxy[1] + xyxy[3])/2)
-        X = alt_drone*(x_center - cx)/fx
-        Y = alt_drone*(y_center - cy)/fy
+        x_center = int((x1 + x2)/2)
+        y_center = int((y1 + y2)/2)
+        X = alt_drone*(x_center - self.cx)/self.fx
+        Y = alt_drone*(y_center - self.cy)/self.fy
         
         b = math.atan(abs(X/Y))
         s = math.sqrt(math.pow(X,2)+math.pow(Y,2))
@@ -92,27 +96,26 @@ class Yolov8:
 
         long = long_drone + deltalong
         lat = lat_drone + deltalat
-
-        return long, lat   
-    '''
+        return long, lat, X, Y   
+    
     
     def current_global_position_cb(self, msg):
-        self.long = msg.longitude
-        self.lat = msg.latitude
-        self.alt = msg.altitude
+        self.longitude = msg.longitude
+        self.latitude = msg.latitude
+        self.altitude = msg.altitude
+    
 
 
 if __name__ == "__main__":
     rospy.init_node('yolov8')
     
     RESULTS = Yolov8()
+    rospy.spin()
     
-    rate = rospy.Rate(10)
+    #rate = rospy.Rate(10)
         
-    while not rospy.is_shutdown():
-        rospy.loginfo(RESULTS.long)
-        rospy.loginfo(RESULTS.lat)
-        rospy.loginfo(RESULTS.alt)
+    #while not rospy.is_shutdown():
+    #    pass
 
 
 
