@@ -13,9 +13,10 @@ class LocalNavigation:
         self.current_global_location = NavSatFix()
         self.current_compass_heading = Float64()
         self.current_global_waypoint = Float64MultiArray()
-        self.obstacle_locations = [np.array([-35.36241997, 149.16487945])]
         self.local_waypoint_counter = 0
         self.in_global_navigation = Bool()
+        self.obstacles_r = Float64MultiArray()
+        self.obstacles_theta = Float64MultiArray()
 
         '''
         -35.36241997, 149.16487945
@@ -71,6 +72,20 @@ class LocalNavigation:
             callback=self.global_navigation_sub_cb
             )
 
+        # Subscribing lidar/obstacles_r topic from lidar_detection_node from detection package
+        self.obstacles_r_sub = rospy.Subscriber(
+            name="lidar/obstacles_r",
+            data_class=Float64MultiArray,
+            callback=self.obstacles_r_sub_cb
+        )
+
+        # Subscribing lidar/obstacles_theta topic from lidar_detection_node from detection package
+        self.obstacles_theta_sub = rospy.Subscriber(
+            name="lidar/obstacles_theta",
+            data_class=Float64MultiArray,
+            callback=self.obstacles_theta_sub_cb
+        )
+
 
     # Call back functions
 
@@ -85,6 +100,12 @@ class LocalNavigation:
 
     def global_navigation_sub_cb(self, msg):
         self.in_global_navigation = msg.data
+
+    def obstacles_r_sub_cb(self, msg):
+        self.obstacles_r = msg.data
+
+    def obstacles_theta_sub_cb(self, msg):
+        self.obstacles_theta = msg.data
 
     # Obstacle Avoidance Algorithm
 
@@ -124,7 +145,7 @@ class LocalNavigation:
         return next_position
 
 
-    def get_path(self, start, goal,obstacles, radius=200, num_waypoints=50):
+    def get_path(self, start, goal, obstacles, radius=200, num_waypoints=50):
         
         waypoints = [start]
 
@@ -228,9 +249,15 @@ class LocalNavigation:
         start_local_frame = np.array([0, 0])
         goal_local_frame = self.GPS_coordinates_to_local_xy(goal_GPS)
 
-        # testing
-        obstacles_GPS = self.obstacle_locations
-        obstacles_local_frame = [self.GPS_coordinates_to_local_xy(obstacle_GPS) for obstacle_GPS in obstacles_GPS]
+        # from lidar
+        obstacles_local_frame = []
+
+        for r, theta in zip(self.obstacles_r, self.obstacles_theta):
+            obstacles_local_frame.append(np.array([r * math.sin(-theta), r * math.cos(-theta)]))
+
+        # # testing
+        # obstacles_GPS = self.obstacle_locations
+        # obstacles_local_frame = [self.GPS_coordinates_to_local_xy(obstacle_GPS) for obstacle_GPS in obstacles_GPS]
 
         local_waypoints_local_frame = self.get_path(start_local_frame, goal_local_frame, obstacles_local_frame)
         local_waypoints_GPS = [self.local_xy_to_GPS_coordinates(local_waypoint_local_frame) for local_waypoint_local_frame in local_waypoints_local_frame]
@@ -280,7 +307,7 @@ if __name__ == "__main__":
 
             rate.sleep()
 
-            if len(local_path.obstacle_locations) > 0:
+            if len(local_path.obstacles_r) > 0 and len(local_path.obstacles_theta) > 0:
 
                 local_waypoints = local_path.get_local_waypoints()
 
@@ -317,4 +344,20 @@ if __name__ == "__main__":
 
 
 
+# if __name__ == "__main__":
+#     try:
+#         rospy.init_node("Local_Navigation_Node")
+#         local_navigation = LocalNavigation()
 
+#         rate = rospy.Rate(10)
+
+#         while not rospy.is_shutdown():
+#             rate.sleep()
+            
+#             if (len(local_navigation.obstacles_r) > 0) and (len(local_navigation.obstacles_theta) > 0):
+#                 local_waypoints = local_navigation.get_local_waypoints()
+
+#                 rospy.loginfo(local_waypoints)
+
+#     except KeyboardInterrupt:
+#         exit()

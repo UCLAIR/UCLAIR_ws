@@ -13,13 +13,13 @@ class LidarDetection:
         self.obstacles = pd.DataFrame(columns=list('θR'))
 
         self.obstacles_r_pub = rospy.Publisher(
-            name="osbtacles_r",
+            name="lidar/obstacles_r",
             data_class=Float64MultiArray,
             queue_size=10
         )
 
         self.obstacles_theta_pub = rospy.Publisher(
-            name="obstacles_theta",
+            name="lidar/obstacles_theta",
             data_class=Float64MultiArray,
             queue_size=10
         )

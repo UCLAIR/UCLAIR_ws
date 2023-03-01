@@ -118,15 +118,23 @@ if __name__ == "__main__":
     try:
         rospy.init_node("uav_gazebo_test_node")
 
+        rate = rospy.Rate(10)
+
         local_navigation = LocalNavigation()
+
+        mission = GazeboExecution()
 
         start = np.array([0, 0])
         goal = np.array([100, 100])
         obstacles = [np.array([10, 30])]
 
         while not rospy.is_shutdown():
-            path = local_navigation.get_path(start, goal, obstacles)
-            rospy.loginfo(path)
+            rate.sleep()
+            rospy.loginfo("Obstacle R")
+            rospy.loginfo(len(mission.obstacles_r))
+
+            rospy.loginfo("Obstacle Theta")
+            rospy.loginfo(mission.obstacles_theta)
 
         # uav = Navigation()
 

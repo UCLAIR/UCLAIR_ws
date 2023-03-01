@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from std_msgs.msg import Float64MultiArray
+from sensor_msgs.msg import NavSatFix
 
 def callback(msg):
     rospy.loginfo(msg)
@@ -10,8 +10,8 @@ def listener():
     rospy.init_node("testing")
 
     rospy.Subscriber(
-        name="/osbtacles_r",
-        data_class=Float64MultiArray,
+        name="mavros/global_position/global",
+        data_class=NavSatFix,
         callback=callback
     )
 
