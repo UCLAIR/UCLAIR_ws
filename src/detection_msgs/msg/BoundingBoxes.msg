@@ -24,5 +24,4 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Header header
-Header image_header
 BoundingBox[] bounding_boxes
