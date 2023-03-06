@@ -8,6 +8,7 @@ from navigation_functions import *
 from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Float64MultiArray, Bool, Float64
 
+
 class LocalNavigation:
     def __init__(self):
         self.current_global_location = NavSatFix()

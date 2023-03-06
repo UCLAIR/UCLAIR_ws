@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
 import rospy
-from sensor_msgs.msg import NavSatFix
+from mavros_msgs.msg import TerrainReport
 
 def callback(msg):
-    rospy.loginfo(msg)
+    rospy.loginfo(msg.current_height)
 
 def listener():
     rospy.init_node("testing")
 
     rospy.Subscriber(
-        name="mavros/global_position/global",
-        data_class=NavSatFix,
+        name="mavros/terrain/report",
+        data_class=TerrainReport,
         callback=callback
     )
 

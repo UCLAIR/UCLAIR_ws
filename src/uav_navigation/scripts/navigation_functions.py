@@ -2,7 +2,7 @@
 
 import rospy
 from math import atan2, pow, sqrt, degrees, radians, sin, cos, asin
-from mavros_msgs.msg import State
+from mavros_msgs.msg import State, TerrainReport
 from geographic_msgs.msg import GeoPoseStamped, GeoPoint
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 from pygeodesy.geoids import GeoidPGM
@@ -23,6 +23,7 @@ class Navigation:
 
         self.waypoint_local_frame = PoseStamped()
         self.waypoint_global_frame = GeoPoseStamped()
+        self.terrain_report = TerrainReport()
 
 
         # ROS Publishers
@@ -76,6 +77,13 @@ class Navigation:
             name="mavros/global_position/compass_hdg",
             data_class=Float64,
             callback=self.current_compass_heading_cb
+        )
+
+        # Subscribing the /terrain/report topic to know the current heigh above terrain and terrain height
+        self.terrain_report_sub = rospy.Subscriber(
+            name="mavros/terrain/report",
+            data_class=TerrainReport,
+            callback=self.current_terrain_report_sub_cb
         )
 
         
@@ -147,7 +155,10 @@ class Navigation:
     def current_compass_heading_cb(self, msg):
         self.current_compass_heading = msg
 
-    
+    def current_terrain_report_sub_cb(self, msg):
+        self.terrain_report.current_height = msg.current_height
+        self.terrain_report.terrain_height = msg.terrain_height
+
     # Geoid Height Function
     def geoid_height(self, lat, lon):
         """
