@@ -5,14 +5,6 @@ import numpy as np
 import cv2
 import webcolors
 
-def rgb_to_hex(rgb_color):
-    hex_color = '#'
-    for i in rgb_color:
-        i = int(i)
-        hex_color += ('{:02x}'.format(i))
-    return hex_color
-
-
 img_name = 'progress-pride-2021.jpg'
 raw_img = cv2.imread(img_name)
 raw_img = cv2.cvtColor(raw_img, cv2.COLOR_BGR2RGB)
@@ -28,7 +20,7 @@ center_colors = clf.cluster_centers_
 
 counts = Counter(color_labels)
 ordered_colors = [center_colors[i] for i in counts.keys()]
-hex_colors = [rgb_to_hex(ordered_colors[i]) for i in counts.keys()]
+hex_colors = ['#' + ''.join([format(int(c), '02x') for c in color]) for color in ordered_colors]
 
 # Define reference colors
 color_names = {
@@ -45,7 +37,7 @@ color_names = {
 }
 
 # Get the closest reference color and its name for each color in the image
-color_names = []
+detected_colors = []
 for hex_color in hex_colors:
     rgb_color = webcolors.hex_to_rgb(hex_color)
     closest_color = None
@@ -55,8 +47,8 @@ for hex_color in hex_colors:
         if distance < closest_distance:
             closest_distance = distance
             closest_color = name
-    color_names.append(closest_color)
+    detected_colors.append(closest_color)
 
 # Print the detected colors and their corresponding reference colors
-for i in range(len(color_names)):
-    print("Detected color: " + hex_colors[i] + ", Reference color: " + color_names[i])
+for i in range(len(detected_colors)):
+    print("Detected color: " + hex_colors[i] + ", Reference color: " + detected_colors[i])
