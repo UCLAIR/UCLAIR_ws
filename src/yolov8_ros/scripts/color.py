@@ -30,16 +30,20 @@ kmeans = KMeans(n_clusters=3, random_state=0).fit(img_data)
 # Get the three main colors as RGB values
 main_colors = kmeans.cluster_centers_.astype(int)
 
-# Initialize variables for closest color and distance
-closest_color = None
-closest_distance = float('inf')
+# Initialize variables for closest color and distance for each main color
+closest_colors = []
+closest_distances = [float('inf')] * 3
 
-# Iterate over reference colors and compute distance
-for color, name in color_names.items():
-    distance = np.linalg.norm(main_colors - color, axis=1).sum()
-    if distance < closest_distance:
-        closest_distance = distance
-        closest_color = name
+# Iterate over reference colors and compute distance for each main color
+for i, color in enumerate(main_colors):
+    closest_color = None
+    closest_distance = float('inf')
+    for ref_color, name in color_names.items():
+        distance = np.linalg.norm(color - ref_color)
+        if distance < closest_distance:
+            closest_distance = distance
+            closest_color = name
+    closest_colors.append(closest_color)
 
-# Print the closest color
-print("The detected color is:", closest_color)
+# Print the three main colors
+print("The three main colors in the image are:", closest_colors)
