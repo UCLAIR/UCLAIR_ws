@@ -9,7 +9,9 @@ from detection_msgs.msg import BoundingBox, BoundingBoxes
 from geographic_msgs.msg import GeoPoseStamped, GeoPoint
 import math
 from pygeodesy.geoids import GeoidPGM
-
+from sensor_msgs.msg import NavSatFix
+from mavros_msgs.msg import TerrainReport
+from std_msgs.msg import Float32, Float64
 
 
 class Yolov8:
@@ -17,9 +19,9 @@ class Yolov8:
         self.source = rospy.get_param("~source")
         self.model = YOLO('yolov8n.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
-        self.longitude = float()
-        self.latitude = float()
-        self.altitude = float()
+        self.longitude = Float64()
+        self.latitude = Float64()
+        self.altitude = Float32()
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
         
@@ -28,6 +30,19 @@ class Yolov8:
             data_class=NavSatFix,
             queue_size=10,
             callback=self.current_global_position_cb
+        )
+
+        self.current_global_position_sub = rospy.Subscriber(
+            name="mavros/global_position/global",
+            data_class=NavSatFix,
+            queue_size=10,
+            callback=self.current_global_position_cb
+        )
+
+        self.current_altitude_sub = rospy.Subscriber(
+            name="mavros/terrain/report",
+            data_class=TerrainReport,
+            callback=self.current_terrain_report_sub_cb
         )
         
         
@@ -39,6 +54,13 @@ class Yolov8:
         self.fy = 347.9976
         self.cx = 320
         self.cy = 320
+
+    def current_global_position_cb(self, msg):
+        self.longitude = msg.longitude
+        self.latitude = msg.latitude
+
+    def current_terrain_report_sub_cb(self, msg):
+        self.altitude = msg.current_height
 
     def get_image(self, data):
         bridge = CvBridge()
