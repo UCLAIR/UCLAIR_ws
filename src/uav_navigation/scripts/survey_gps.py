@@ -37,4 +37,10 @@ def zigzag_area(num_zigzags):
     return path_coords
 
 
+if __name__ == "__main__":
+    path_coords = zigzag_area(5)
+
+    map = 
+
+
 
