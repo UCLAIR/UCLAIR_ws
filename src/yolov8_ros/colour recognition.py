@@ -5,6 +5,14 @@ import numpy as np
 import cv2
 import webcolors
 
+def closest(colors, color):
+    colors = np.array(colors)
+    color = np.array(color)
+    distances = np.sqrt(np.sum((colors-color)**2, axis=1))
+    index_of_smallest = np.where(distances == np.amin(distances))
+    smallest_distance = colors[index_of_smallest][0]
+    return smallest_distance
+
 img_name = 'progress-pride-2021.jpg'
 raw_img = cv2.imread(img_name)
 raw_img = cv2.cvtColor(raw_img, cv2.COLOR_BGR2RGB)
@@ -40,15 +48,8 @@ color_names = {
 detected_colors = []
 for hex_color in hex_colors:
     rgb_color = webcolors.hex_to_rgb(hex_color)
-    closest_color = None
-    closest_distance = float('inf')
-    for ref_color, name in color_names.items():
-        distance = np.linalg.norm(np.array(rgb_color) - np.array(ref_color))
-        if distance < closest_distance:
-            closest_distance = distance
-            closest_color = name
-    detected_colors.append(closest_color)
+    closest_color = closest(color_names.keys(), rgb_color)
+    color_name = color_names[closest_color]
+    detected_colors.append((closest_color, color_name))
 
-# Print the detected colors and their corresponding reference colors
-for i in range(len(detected_colors)):
-    print("Detected color: " + hex_colors[i] + ", Reference color: " + detected_colors[i])
+print(detected_colors)
