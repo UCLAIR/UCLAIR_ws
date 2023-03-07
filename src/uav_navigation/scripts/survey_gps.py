@@ -1,4 +1,4 @@
-
+import folium
 def zigzag_area(num_zigzags):
     # Define the coordinates of the area to scout
     area_coords = [(38.31442311312976, -76.54522971451763),
@@ -38,9 +38,22 @@ def zigzag_area(num_zigzags):
 
 
 if __name__ == "__main__":
-    path_coords = zigzag_area(5)
+    # Define the center of the map and create the map object
+    map_center = [38.31442311312976, -76.54522971451763]
+    m = folium.Map(location=map_center, zoom_start=18)
 
-    map = 
+    # Get the list of GPS coordinates for the drone's path
+    path_coords = zigzag_area(3)
+
+    # Create a list of lat-lon pairs for the polyline
+    polyline_coords = [(lat, lon) for lat, lon in path_coords]
+
+    # Add the polyline to the map
+    folium.PolyLine(locations=polyline_coords, color='red').add_to(m)
+
+    # Display the map
+    m
+
 
 
 
