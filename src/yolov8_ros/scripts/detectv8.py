@@ -12,6 +12,8 @@ from pygeodesy.geoids import GeoidPGM
 from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
+from alphanumeric_detection import alphanumeric_detection
+from colour_detection import color_detection
 
 
 class Yolov8:
@@ -77,6 +79,9 @@ class Yolov8:
                 except:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
                                                                                       5,5,5)
+                bb.color_shape, bb.color_char = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
                 bb.Class = self.model.names[int(cls)]
