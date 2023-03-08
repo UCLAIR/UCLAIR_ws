@@ -2,6 +2,7 @@ import sys
 from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
+import cv2
 
 
 class ImageProcessingClassifier:
@@ -17,13 +18,18 @@ class ImageProcessingClassifier:
         "Orange": [255, 165, 0]
     }
 
-    def __init__(self, image_path):
-        self.image = crop_center(image_path)
+    def __init__(self, image):
+        self.image = crop_center(image)
 
     @staticmethod
-    def crop_center(image_path):
+    def crop_center(image_cv2):
+         """Convert cv2 Image into PIL Image"""
+        # Convert the color format from BGR to RGB
+        cv2_img = cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB)
+        # Convert the cv2 image to a PIL image
+        image = Image.fromarray(cv2_img)
+        
       """Crop the given PIL Image from the center to 4 times smaller."""
-      image = Image.open(image_path).convert('RGB')
       width, height = image.size
       new_width, new_height = width // 2, height // 2
       left = (width - new_width) // 2
@@ -101,8 +107,9 @@ class ImageProcessingClassifier:
         r1, g1, b1 = rgb1
         r2, g2, b2 = rgb2
         return ((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2) ** 0.5
-    
-image_path = "cross.jpg"
-cropped_classifier = ImageProcessingClassifier(image_path)
-cropped_dominant_colors = cropped_classifier.get_dominant_color()
-print("Cropped Image Shape:", cropped_dominant_colors[0], "Cropped Image Text:", cropped_dominant_colors[1])
+
+def color_detection(image)
+    cropped_classifier = ImageProcessingClassifier(image)
+    cropped_dominant_colors = cropped_classifier.get_dominant_color()
+    #print("Cropped Image Shape:", cropped_dominant_colors[0], "Cropped Image Text:", cropped_dominant_colors[1])
+    return cropped_dominant_colors[0], cropped_dominant_colors[1]
