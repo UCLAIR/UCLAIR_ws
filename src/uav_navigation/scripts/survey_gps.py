@@ -43,7 +43,7 @@ if __name__ == "__main__":
     m = folium.Map(location=map_center, zoom_start=18)
 
     # Get the list of GPS coordinates for the drone's path
-    path_coords = zigzag_area(3)
+    path_coords = zigzag_area(10)
 
     # Create a list of lat-lon pairs for the polyline
     polyline_coords = [(lat, lon) for lat, lon in path_coords]
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     folium.PolyLine(locations=polyline_coords, color='red').add_to(m)
 
     # Display the map
-    m
+    m.save("hello10.html")
 
 
 

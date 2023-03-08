@@ -16,11 +16,13 @@ class LocalNavigation:
         self.current_global_waypoint = Float64MultiArray()
         self.local_waypoint_counter = 0
         self.in_global_navigation = Bool()
-        self.obstacles_r = Float64MultiArray()
-        self.obstacles_theta = Float64MultiArray()
+        # self.obstacles_r = Float64MultiArray()
+        # self.obstacles_theta = Float64MultiArray()
+
+        self.obstacles_GPS_location = [-35.36211679, 149.16509973]
 
         '''
-        -35.36241997, 149.16487945
+        -35.36211679 149.16509973
         '''
 
         # Obstacle Avoidance constants
@@ -343,22 +345,3 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         exit()
 
-
-
-# if __name__ == "__main__":
-#     try:
-#         rospy.init_node("Local_Navigation_Node")
-#         local_navigation = LocalNavigation()
-
-#         rate = rospy.Rate(10)
-
-#         while not rospy.is_shutdown():
-#             rate.sleep()
-            
-#             if (len(local_navigation.obstacles_r) > 0) and (len(local_navigation.obstacles_theta) > 0):
-#                 local_waypoints = local_navigation.get_local_waypoints()
-
-#                 rospy.loginfo(local_waypoints)
-
-#     except KeyboardInterrupt:
-#         exit()
