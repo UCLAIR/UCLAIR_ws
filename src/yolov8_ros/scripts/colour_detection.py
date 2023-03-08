@@ -18,9 +18,31 @@ class ImageProcessingClassifier:
     }
 
     def __init__(self, image_path):
-        self.image = Image.open(image_path)
+        self.image = crop_center(image_path)
 
-    def get_dominant_color(self, k=2):
+    @staticmethod
+    def crop_center(image_path):
+      """Crop the given PIL Image from the center to 4 times smaller."""
+      image = Image.open(image_path).convert('RGB')
+      width, height = image.size
+      new_width, new_height = width // 2, height // 2
+      left = (width - new_width) // 2
+      top = (height - new_height) // 2
+      right = (width + new_width) // 2
+      bottom = (height + new_height) // 2
+      return image.crop((left, top, right, bottom))
+      
+    def crop_center(self):
+      """Crop the given PIL Image from the center to 4 times smaller."""
+      width, height = self.image.size
+      new_width, new_height = width // 2, height // 2
+      left = (width - new_width) // 2
+      top = (height - new_height) // 2
+      right = (width + new_width) // 2
+      bottom = (height + new_height) // 2
+      return self.image.crop((left, top, right, bottom))
+
+    def get_dominant_color(self, k=3):
 
         im_small = self.image.resize((150, 150))
         im_arr = np.array(im_small)
@@ -60,7 +82,7 @@ class ImageProcessingClassifier:
 
         main_colors = []
 
-        for color in sorted_colors[:2]:
+        for color in sorted_colors[:3]:
             main_colors.append(color[0])
 
         return main_colors
@@ -79,9 +101,8 @@ class ImageProcessingClassifier:
         r1, g1, b1 = rgb1
         r2, g2, b2 = rgb2
         return ((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2) ** 0.5
-
-
-image_path = "lol.png"
-classifier = ImageProcessingClassifier(image_path)
-dominant_colors = classifier.get_dominant_color()
-print("Shape:", dominant_colors[0], "Text:", dominant_colors[1])
+    
+image_path = "cross.jpg"
+cropped_classifier = ImageProcessingClassifier(image_path)
+cropped_dominant_colors = cropped_classifier.get_dominant_color()
+print("Cropped Image Shape:", cropped_dominant_colors[0], "Cropped Image Text:", cropped_dominant_colors[1])
