@@ -79,7 +79,7 @@ class Yolov8:
                 except:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
                                                                                       5,5,5)
-                bb.color_shape, bb.color_char = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 
                 bb.probability = float(r.boxes.conf[x])
