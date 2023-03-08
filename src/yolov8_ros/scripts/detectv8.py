@@ -32,13 +32,6 @@ class Yolov8:
             callback=self.current_global_position_cb
         )
 
-        self.current_global_position_sub = rospy.Subscriber(
-            name="mavros/global_position/global",
-            data_class=NavSatFix,
-            queue_size=10,
-            callback=self.current_global_position_cb
-        )
-
         self.current_altitude_sub = rospy.Subscriber(
             name="mavros/terrain/report",
             data_class=TerrainReport,
@@ -120,11 +113,7 @@ class Yolov8:
         lat = lat_drone + deltalat
         return long, lat, X, Y   
     
-    
-    def current_global_position_cb(self, msg):
-        self.longitude = msg.longitude
-        self.latitude = msg.latitude
-        self.altitude = msg.altitude
+
     
 
 
