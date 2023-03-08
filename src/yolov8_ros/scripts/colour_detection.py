@@ -108,7 +108,7 @@ class ImageProcessingClassifier:
         r2, g2, b2 = rgb2
         return ((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2) ** 0.5
 
-def color_detection(image)
+def color_detection(image):
     cropped_classifier = ImageProcessingClassifier(image)
     cropped_dominant_colors = cropped_classifier.get_dominant_color()
     #print("Cropped Image Shape:", cropped_dominant_colors[0], "Cropped Image Text:", cropped_dominant_colors[1])
