@@ -33,3 +33,6 @@ float64 long
 float64 lat
 float64 xDISTANCE
 float64 yDISTANCE
+string character
+string color_shape
+string color_char
