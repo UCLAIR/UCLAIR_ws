@@ -33,4 +33,3 @@ float64 long
 float64 lat
 float64 xDISTANCE
 float64 yDISTANCE
-int64 order #order staring from 0,1,2,3,4
