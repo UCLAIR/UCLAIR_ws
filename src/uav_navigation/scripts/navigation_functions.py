@@ -2,16 +2,17 @@
 
 import rospy
 from math import atan2, pow, sqrt, degrees, radians, sin, cos, asin
-from mavros_msgs.msg import State, TerrainReport
+from mavros_msgs.msg import State, TerrainReport, PositionTarget
 from geographic_msgs.msg import GeoPoseStamped, GeoPoint
-from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
+from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion, PointStamped
 from pygeodesy.geoids import GeoidPGM
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Odometry
-from mavros_msgs.srv import SetMode, SetModeRequest
+from mavros_msgs.srv import SetMode, SetModeRequest, SetMavFrame, SetMavFrameRequest
 from mavros_msgs.srv import CommandTOL, CommandTOLRequest, CommandLong, CommandLongRequest
 from mavros_msgs.srv import CommandBool, CommandBoolRequest
 from std_msgs.msg import Float64
+from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 
 class Navigation:
@@ -24,6 +25,9 @@ class Navigation:
         self.waypoint_local_frame = PoseStamped()
         self.waypoint_global_frame = GeoPoseStamped()
         self.terrain_report = TerrainReport()
+
+        self.current_local_local_position = PoseStamped()
+        
 
 
         # ROS Publishers
@@ -79,11 +83,18 @@ class Navigation:
             callback=self.current_compass_heading_cb
         )
 
-        # Subscribing the /terrain/report topic to know the current heigh above terrain and terrain height
+        # Subscribing the terrain/report topic to know the current heigh above terrain and terrain height
         self.terrain_report_sub = rospy.Subscriber(
             name="mavros/terrain/report",
             data_class=TerrainReport,
             callback=self.current_terrain_report_sub_cb
+        )
+
+        # Subscribing the local_position/pose topic to know the local frame position
+        self.current_local_local_position_sub = rospy.Subscriber(
+            name="mavros/local_position/pose",
+            data_class=PoseStamped,
+            callback=self.current_local_local_position_sub_cb
         )
 
         
@@ -124,6 +135,13 @@ class Navigation:
             service_class=CommandTOL
         )
 
+        # Frame Service
+        rospy.wait_for_service("mavros/setpoint_position/mav_frame")
+        self.frame_client = rospy.ServiceProxy(
+            name="mavros/setpoint_position/mav_frame",
+            service_class=SetMavFrame
+        )
+
     # Call Back Functions
 
     # State Subscriber Call Back Function
@@ -159,6 +177,9 @@ class Navigation:
         self.terrain_report.current_height = msg.current_height
         self.terrain_report.terrain_height = msg.terrain_height
 
+    def current_local_local_position_sub_cb(self, msg):
+        self.current_local_local_position = msg
+
     # Geoid Height Function
     def geoid_height(self, lat, lon):
         """
@@ -176,6 +197,20 @@ class Navigation:
         )
 
         return _egm96.height(lat, lon)
+    
+    # Initialising a new local reference frame for the drone to accomplish local frame waypoint navigation
+    def set_new_local_reference_frame(self):
+
+        SetFrame_srv = SetMavFrameRequest(7)
+        
+        response = self.frame_client(SetFrame_srv)
+
+        if response.success:
+            rospy.loginfo("Reference Frame Changed to Locak Offset NED")
+
+        else:
+            rospy.loginfo("Reference Frame Not Changed")
+        
 
     # Wait for Connection with FCU function
     def wait4connect(self):
@@ -296,6 +331,33 @@ class Navigation:
         self.waypoint_global_frame.pose.orientation = Quaternion(qx, qy, qz, qw)
 
 
+    def set_local_destination_offset_ned(self, x, y, z):
+
+        local_offset_ned = PointStamped()
+        local_offset_ned.header.frame_id = "base_link"
+        local_offset_ned.point.x = x
+        local_offset_ned.point.y = y
+        local_offset_ned.point.z = z
+
+        roll = 0
+        pitch = 0
+        yaw = 0
+
+        local_frame_waypoint_msg = PoseStamped()
+
+        local_frame_waypoint_msg.header.frame_id = "base_link"
+        local_frame_waypoint_msg.pose.position = local_offset_ned.point
+
+        quaternion = quaternion_from_euler(roll, pitch, yaw)
+
+        local_frame_waypoint_msg.pose.orientation.x = quaternion[0]
+        local_frame_waypoint_msg.pose.orientation.y = quaternion[1]
+        local_frame_waypoint_msg.pose.orientation.z = quaternion[2]
+        local_frame_waypoint_msg.pose.orientation.w = quaternion[3]
+
+        self.local_position_pub.publish(local_frame_waypoint_msg)
+        
+
     # Setting local destination function
     def set_local_destination(self, x, y, z):
         """
@@ -306,7 +368,6 @@ class Navigation:
             y (Float): y(m) Distance with respect to local frame
             z (Float): z(m) Distance with respect to local frame
         """
-
         self.waypoint_local_frame.pose.position = Point(x, y, z)
         self.local_position_pub.publish(self.waypoint_local_frame)
 

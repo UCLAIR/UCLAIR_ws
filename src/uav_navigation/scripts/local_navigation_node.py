@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 from navigation_functions import *
 from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import Float64MultiArray, Bool, Float64
@@ -19,15 +20,12 @@ class LocalNavigation:
         # self.obstacles_r = Float64MultiArray()
         # self.obstacles_theta = Float64MultiArray()
 
-        self.obstacles_GPS_location = [-35.36211679, 149.16509973]
+        self.obstacles_GPS_location = np.array([[-35.36215029, 149.16507071]])
 
-        '''
-        -35.36211679 149.16509973
-        '''
 
         # Obstacle Avoidance constants
         self.K_ATTRACT = 0.1
-        self.K_REPULSE = 5000
+        self.K_REPULSE = 7500
 
         # ROS Publishers
 
@@ -94,6 +92,25 @@ class LocalNavigation:
 
     def current_global_location_sub_cb(self, msg):
         self.current_global_location = msg
+        lat_1 = msg.latitude
+        lat_2 = self.obstacles_GPS_location[0][0]
+
+        lon_1 = msg.longitude
+        lon_2 = self.obstacles_GPS_location[0][1]
+
+        change_in_lat = (lat_2 - lat_1) * math.pi/180
+        change_in_lon = (lon_2 - lon_1) * math.pi/180
+
+        a = math.sin(change_in_lat/2) ** 2 + math.cos(lat_1*math.pi/180) * math.cos(lat_2*math.pi/180) * math.sin(change_in_lon/2) ** 2
+
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+        d = 6371000 * c
+
+        if d < 50:
+            rospy.logwarn(f"Distance to the obstacle: {d}")
+
+
 
     def global_waypoint_sub_cb(self, msg):
         self.current_global_waypoint = msg.data
@@ -112,8 +129,17 @@ class LocalNavigation:
 
     # Obstacle Avoidance Algorithm
 
-    def get_attractive_force(self, position, goal):
+    def get_attractive_force(self, start, position, goal):
+        distance_goal = np.linalg.norm(goal - position)
+        distance_star = np.linalg.norm(goal - start) * 0.5
 
+        # if distance_goal <= distance_star:
+
+        #     return self.K_ATTRACT * (goal - position)
+        
+        # else:
+        #     return distance_star * self.K_ATTRACT * (goal-position)/distance_goal
+        
         return self.K_ATTRACT * (goal - position)
 
 
@@ -132,9 +158,9 @@ class LocalNavigation:
             return np.zeros_like(position)
 
 
-    def get_next_waypoint(self, position, goal, obstacles, radius=200):
+    def get_next_waypoint(self, start, position, goal, obstacles, radius=200):
 
-        attractive_force = self.get_attractive_force(position, goal)
+        attractive_force = self.get_attractive_force(start, position, goal)
 
         repulsive_forces = [self.get_repulsive_force(position, obs, radius) for obs in obstacles]
 
@@ -156,7 +182,7 @@ class LocalNavigation:
 
         for i in range(num_waypoints):
 
-            next_waypoint = self.get_next_waypoint(current_position, goal, obstacles, radius)
+            next_waypoint = self.get_next_waypoint(start, current_position, goal, obstacles, radius)
 
             waypoints.append(next_waypoint)
 
@@ -188,6 +214,37 @@ class LocalNavigation:
         minimum_waypoints.append(goal.tolist())
 
         return minimum_waypoints
+    
+    def draw_graph(self, path):
+        goal = self.current_global_waypoint
+        obstacles = self.obstacles_GPS_location
+        datax = [p[0] for p in path]
+        datay = [p[1] for p in path]
+
+        fig, ax = plt.subplots()
+
+        ax.plot([obs[0] for obs in obstacles], [obs[1] for obs in obstacles], 'ko')
+        ax.plot([goal[0]], [goal[1]], 'ro')
+
+        line, = ax.plot([], [])
+
+        num_frames = len(datax)
+        frame_interval = 10
+
+        def animate(frame):
+            # get the x and y coordinates of the line for the current frame
+            x = datax[:frame+1]
+            y = datay[:frame+1]
+            # update the data of the line object
+            line.set_data(x, y)
+            # return the updated line
+            return line,
+
+        # create the animation object
+        animation = FuncAnimation(fig, animate, frames=num_frames, interval=frame_interval)
+        
+        plt.show()
+
 
     def local_xy_to_GPS_coordinates(self, localXY):
         
@@ -252,15 +309,15 @@ class LocalNavigation:
         start_local_frame = np.array([0, 0])
         goal_local_frame = self.GPS_coordinates_to_local_xy(goal_GPS)
 
-        # from lidar
-        obstacles_local_frame = []
+        # # from lidar
+        # obstacles_local_frame = []
 
-        for r, theta in zip(self.obstacles_r, self.obstacles_theta):
-            obstacles_local_frame.append(np.array([r * math.sin(-theta), r * math.cos(-theta)]))
+        # for r, theta in zip(self.obstacles_r, self.obstacles_theta):
+        #     obstacles_local_frame.append(np.array([r * math.sin(-theta), r * math.cos(-theta)]))
 
-        # # testing
-        # obstacles_GPS = self.obstacle_locations
-        # obstacles_local_frame = [self.GPS_coordinates_to_local_xy(obstacle_GPS) for obstacle_GPS in obstacles_GPS]
+        # testing
+        obstacles_GPS = self.obstacles_GPS_location
+        obstacles_local_frame = [self.GPS_coordinates_to_local_xy(obstacle_GPS) for obstacle_GPS in obstacles_GPS]
 
         local_waypoints_local_frame = self.get_path(start_local_frame, goal_local_frame, obstacles_local_frame)
         local_waypoints_GPS = [self.local_xy_to_GPS_coordinates(local_waypoint_local_frame) for local_waypoint_local_frame in local_waypoints_local_frame]
@@ -310,7 +367,7 @@ if __name__ == "__main__":
 
             rate.sleep()
 
-            if len(local_path.obstacles_r) > 0 and len(local_path.obstacles_theta) > 0:
+            if len(local_path.obstacles_GPS_location) > 0:
 
                 local_waypoints = local_path.get_local_waypoints()
 

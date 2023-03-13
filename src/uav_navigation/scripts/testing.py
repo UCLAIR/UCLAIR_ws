@@ -6,7 +6,7 @@ import math
 
 # Constants
 K_ATTRACT = 0.1  # Attractive force coefficient
-K_REPULSE = 5000  # Repulsive force coefficient
+K_REPULSE = 10000  # Repulsive force coefficient
 
 """
 normal - 0.1 5000
@@ -131,7 +131,7 @@ def get_path(start, goal, obstacles, radius, num_waypoints):
 # Example usage
 start = np.array([0, 0])
 goal = np.array([100, 125])
-obstacles = [np.array([50, 60]), np.array([75, 75])]
+obstacles = [np.array([35, 35])]
 radius = 200
 num_waypoints = 1000
 

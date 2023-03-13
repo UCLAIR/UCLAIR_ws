@@ -114,8 +114,8 @@ if __name__ == "__main__":
             else:
                 rospy.loginfo("In Global Waypoint Navigation Mission...")
 
-                # Set speed of 20m/s
-                uav.set_speed(20)
+                # Set speed of 5m/s
+                uav.set_speed(5)
 
                 # Setting global destination to desired global waypoint
                 uav.set_global_destination(
