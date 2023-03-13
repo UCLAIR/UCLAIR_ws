@@ -12,6 +12,8 @@ from pygeodesy.geoids import GeoidPGM
 from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
+from alphanumeric_detection import alphanumeric_detection
+from colour_detection import color_detection
 
 
 class Yolov8:
@@ -25,13 +27,6 @@ class Yolov8:
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
         
-        self.current_global_position_sub = rospy.Subscriber(
-            name="mavros/global_position/global",
-            data_class=NavSatFix,
-            queue_size=10,
-            callback=self.current_global_position_cb
-        )
-
         self.current_global_position_sub = rospy.Subscriber(
             name="mavros/global_position/global",
             data_class=NavSatFix,
@@ -84,6 +79,9 @@ class Yolov8:
                 except:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
                                                                                       5,5,5)
+                [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
                 bb.Class = self.model.names[int(cls)]
@@ -120,11 +118,7 @@ class Yolov8:
         lat = lat_drone + deltalat
         return long, lat, X, Y   
     
-    
-    def current_global_position_cb(self, msg):
-        self.longitude = msg.longitude
-        self.latitude = msg.latitude
-        self.altitude = msg.altitude
+
     
 
 
