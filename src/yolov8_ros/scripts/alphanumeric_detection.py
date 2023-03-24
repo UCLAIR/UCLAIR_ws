@@ -2,7 +2,7 @@ import cv2
 import pytesseract
 
 def alphanumeric_detection(image):
-  pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+  pytesseract.pytesseract.tesseract_cmd = r"/usr/bin/tesseract"
 
   # Grayscale, Gaussian blur, Otsu's threshold
   # image = cv2.imread('1.png')
