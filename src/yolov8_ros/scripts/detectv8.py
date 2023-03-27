@@ -13,7 +13,7 @@ from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
 from alphanumeric_detection import alphanumeric_detection
-from colour_detection import color_detection
+#from colour_detection import color_detection
 
 
 class Yolov8:
@@ -45,8 +45,8 @@ class Yolov8:
         self.sub = rospy.Subscriber(self.source,Image, self.get_image)
         self.pred_pub = rospy.Publisher('BoundingBoxes', BoundingBoxes, queue_size = 10)
         
-        self.fx = 347.9976
-        self.fy = 347.9976
+        self.fx = 240
+        self.fy = 240
         self.cx = 320
         self.cy = 320
 
@@ -75,12 +75,12 @@ class Yolov8:
                 bb.ymax = int(xyxy[3])
                 try:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
-                                                                                      self.longitude,self.latitude,self.latitude)
+                                                                                      self.longitude,self.latitude,self.altitude)
                 except:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
                                                                                       5,5,5)
-                [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
-                bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                #[bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                #bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
@@ -101,10 +101,10 @@ class Yolov8:
 
     def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
         #https://snehilsanyal.github.io/files/paper1.pdf
-        x_center = int((x1 + x2)/2)
-        y_center = int((y1 + y2)/2)
-        X = alt_drone*(x_center - self.cx)/self.fx
-        Y = alt_drone*(y_center - self.cy)/self.fy
+        x_center = ((x1 + x2)/2)
+        y_center = ((y1 + y2)/2)
+        X = (alt_drone)*(x_center - self.cx)/self.fx
+        Y = (alt_drone)*(y_center - self.cy)/self.fy
         
         b = math.atan(abs(X/Y))
         s = math.sqrt(math.pow(X,2)+math.pow(Y,2))
