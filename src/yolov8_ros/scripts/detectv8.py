@@ -51,11 +51,11 @@ class Yolov8:
         self.cy = 320
 
     def current_global_position_cb(self, msg):
-        self.longitude = msg.longitude.data
-        self.latitude = msg.latitude.data
+        self.longitude = msg.longitude
+        self.latitude = msg.latitude
 
     def current_terrain_report_sub_cb(self, msg):
-        self.altitude = msg.current_height.data
+        self.altitude = msg.current_height
 
     def get_image(self, data):
         bridge = CvBridge()
