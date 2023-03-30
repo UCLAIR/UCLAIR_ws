@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
+import rosbag
 import cv2
 from cv_bridge import CvBridge
 from ultralytics import YOLO
@@ -28,7 +29,7 @@ class Yolov8:
         # The altitude is WGS84 Ellipsoid
         
         # Create a ROS bag file for recording
-        self.bag_file = rosbag.Bag('bounding_boxes.bag', 'w')
+        self.bag = rosbag.Bag('bounding_boxes.bag', 'w')
         
         self.current_global_position_sub = rospy.Subscriber(
             name="mavros/global_position/global",
@@ -92,9 +93,10 @@ class Yolov8:
                 # Log the bounding box to the ROS bag file
                 topic_name = '/bounding_boxes'
                 msg = bb
-                self.bag_file.write(topic_name, msg, t=data.header.stamp)
+                self.bag.write(topic_name, msg, t=data.header.stamp)
                 
         self.pred_pub.publish(BB)
+        self.bag.close()
 
                 
 
@@ -134,7 +136,6 @@ if __name__ == "__main__":
     
     RESULTS = Yolov8()
     rospy.spin()
-    
     #rate = rospy.Rate(10)
         
     #while not rospy.is_shutdown():
