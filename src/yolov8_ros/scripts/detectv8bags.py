@@ -29,7 +29,7 @@ class Yolov8:
         # The altitude is WGS84 Ellipsoid
         
         # Create a ROS bag file for recording
-        self.bag = rosbag.Bag('bounding_boxes.bag', 'w')
+        self.bag = rosbag.Bag('/home/jetson/UCLAIR_ws/src/yolov8_ros/rosbags/bounding_boxes.bag', 'w')
         
         self.current_global_position_sub = rospy.Subscriber(
             name="mavros/global_position/global",
