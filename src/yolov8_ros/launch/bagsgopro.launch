@@ -4,6 +4,6 @@
     <node pkg="yolov8_ros" name="yolo" type="detectv8bags.py" output="screen">
         <param name="source" value="$(arg source)"/>
     </node>
-    <node pkg="rosbag" type="record" name="bounding_box_recorder" args="-O bounding_boxes.bag /bounding_boxes"/>
+    <node pkg="rosbag" type="record" name="bounding_box_recorder" args="-O bounding_boxes.bag /BoundingBoxes"/>
     </node>
 </launch>
