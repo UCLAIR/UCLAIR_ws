@@ -13,13 +13,13 @@ from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
 from alphanumeric_detection import alphanumeric_detection
-#from colour_detection import color_detection
+from colour_detection import color_detection
 
 
 class Yolov8:
     def __init__(self):
         self.source = rospy.get_param("~source")
-        self.model = YOLO('yolov8n.pt')
+        self.model = YOLO('/home/jetson/UCLAIR_ws/src/yolov8_ros/best.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
         self.longitude = Float64()
         self.latitude = Float64()
@@ -41,8 +41,8 @@ class Yolov8:
         )
         
         
-        #self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
-        self.sub = rospy.Subscriber(self.source,Image, self.get_image)
+        self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
+        #self.sub = rospy.Subscriber(self.source,Image, self.get_image)
         self.pred_pub = rospy.Publisher('BoundingBoxes', BoundingBoxes, queue_size = 10)
         
         self.fx = 240
@@ -51,11 +51,11 @@ class Yolov8:
         self.cy = 320
 
     def current_global_position_cb(self, msg):
-        self.longitude = msg.longitude
-        self.latitude = msg.latitude
+        self.longitude = msg.longitude.data
+        self.latitude = msg.latitude.data
 
     def current_terrain_report_sub_cb(self, msg):
-        self.altitude = msg.current_height
+        self.altitude = msg.current_height.data
 
     def get_image(self, data):
         bridge = CvBridge()
@@ -73,14 +73,12 @@ class Yolov8:
                 bb.ymin = int(xyxy[1])
                 bb.xmax = int(xyxy[2])
                 bb.ymax = int(xyxy[3])
-                try:
-                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
-                                                                                      self.longitude,self.latitude,self.altitude)
-                except:
-                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,
-                                                                                      5,5,5)
-                #[bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
-                #bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                
+                #[bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,self.longitude,self.latitude,self.altitude)
+                [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
+                
+                [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
@@ -96,7 +94,7 @@ class Yolov8:
         self.results = self.model.predict(
             source = video_source,
             conf = 0.25,
-            show = True
+            show = False
         )
 
     def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
@@ -116,7 +114,8 @@ class Yolov8:
 
         long = long_drone + deltalong
         lat = lat_drone + deltalat
-        return long, lat, X, Y   
+        
+        return long, lat, X, Y
     
 
     

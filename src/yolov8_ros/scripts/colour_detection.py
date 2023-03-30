@@ -19,23 +19,23 @@ class ImageProcessingClassifier:
     }
 
     def __init__(self, image):
-        self.image = Image.open(image)
+        self.image = self.crop_center(self,image)
 
-    # @staticmethod
-    # def crop_center(self, image_cv2):
-    #     # """Convert cv2 Image into PIL Image"""
-    #     # Convert the color format from BGR to RGB
-    #     cv2_img = cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB)
-    #     # Convert the cv2 image to a PIL image
-    #     image = Image.fromarray(cv2_img)
-    #     """Crop the given PIL Image from the center to 4 times smaller."""
-    #     width, height = image.size
-    #     new_width, new_height = width // 2, height // 2
-    #     left = (width - new_width) // 2
-    #     top = (height - new_height) // 2
-    #     right = (width + new_width) // 2
-    #     bottom = (height + new_height) // 2
-    #     return image.crop((left, top, right, bottom))
+    @staticmethod
+    def crop_center(self, image_cv2):
+        # """Convert cv2 Image into PIL Image"""
+        # Convert the color format from BGR to RGB
+        cv2_img = cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB)
+        # Convert the cv2 image to a PIL image
+        image = Image.fromarray(cv2_img)
+        """Crop the given PIL Image from the center to 4 times smaller."""
+        width, height = image.size
+        new_width, new_height = width // 2, height // 2
+        left = (width - new_width) // 2
+        top = (height - new_height) // 2
+        right = (width + new_width) // 2
+        bottom = (height + new_height) // 2
+        return image.crop((left, top, right, bottom))
       
     def get_dominant_color(self, k=3):
 
@@ -100,5 +100,7 @@ class ImageProcessingClassifier:
 def color_detection(image):
     classifier = ImageProcessingClassifier(image)
     dominant_colors = classifier.get_dominant_color()
-    #print("Cropped Image Shape:", cropped_dominant_colors[0], "Cropped Image Text:", cropped_dominant_colors[1])
-    return dominant_colors[0], dominant_colors[1]
+    if len(dominant_colors) > 1:
+        return dominant_colors[0], dominant_colors[1]
+    else:
+        return 'null','null'

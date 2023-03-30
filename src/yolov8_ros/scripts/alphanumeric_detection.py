@@ -16,9 +16,11 @@ def alphanumeric_detection(image):
   invert = 255 - opening
 
   # Perform text extraction
-  data = pytesseract.image_to_string(invert, lang='eng', config='--psm 10')
-  # print(data)
-  return data
+  data = pytesseract.image_to_string(invert, lang='eng', config='-c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyz0123456789 --psm 10')
+  if len(data)>1:
+    return data[0]
+  else:
+    return 'null'
 
   #   cv2.imshow('thresh', thresh)
   #   cv2.imshow('opening', opening)
