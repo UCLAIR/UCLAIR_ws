@@ -27,6 +27,9 @@ class Yolov8:
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
         
+        # Create a ROS bag file for recording
+        self.bag_file = rosbag.Bag('bounding_boxes.bag', 'w')
+        
         self.current_global_position_sub = rospy.Subscriber(
             name="mavros/global_position/global",
             data_class=NavSatFix,
@@ -85,6 +88,11 @@ class Yolov8:
                 bb.Class = self.model.names[int(cls)]
                 x = x + 1
                 BB.bounding_boxes.append(bb)
+                
+                # Log the bounding box to the ROS bag file
+                topic_name = '/bounding_boxes'
+                msg = bb
+                self.bag_file.write(topic_name, msg, t=data.header.stamp)
                 
         self.pred_pub.publish(BB)
 
