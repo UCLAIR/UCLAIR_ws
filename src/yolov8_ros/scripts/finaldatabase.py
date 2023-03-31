@@ -36,7 +36,11 @@ if __name__ == "__main__":
     RESULTS=Dataf()
     rospy.spin()
     RESULTS.dataf.to_csv('/home/jetson/UCLAIR_ws/src/yolov8_ros/database/finaldata.csv')
-    
+    # Read data from BOTTLESDATA.txt and compare with dataf
+    bottles_df = pd.read_csv('BOTTLESDATA.txt', sep=',', header=None, names=['Class', 'character', 'color_shape', 'color_char'])
+    matches_df = pd.merge(bottles_df, self.dataf, on=['Class','character', 'color_shape', 'color_char'])
+    matches_df.to_csv('list.csv', index=False)
+
 
 
 
