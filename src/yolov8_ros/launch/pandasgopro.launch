@@ -1,7 +1,0 @@
-<launch>
-    <arg name="source" default="/data_raw"/>
-
-    <node pkg="yolov8_ros" name="datafra" type="database.py" output="screen">
-        <param name="source" value="$(arg source)"/>
-    </node>
-</launch>
