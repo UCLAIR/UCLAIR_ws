@@ -1,0 +1,7 @@
+<launch>
+    <arg name="source" default="/database_raw"/>
+
+    <node pkg="yolov8_ros" name="database" type="database.py" output="screen">
+        <param name="source" value="$(arg source)"/>
+    </node>
+</launch>
