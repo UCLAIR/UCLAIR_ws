@@ -1,5 +1,6 @@
-Yellow, "A", Orange, Star
-Orange, "2", Blue, Quarter Circle
+'quarter_circle','w','Brown','Grey'
+'rectangle',['a'],['Black'],['White']
+['trapezoid'],['s'],['Black'],['Grey']
 Human
-Red, "I", Green, Trapezoid
-Green, "L", Purple, Hexagon
+['rectangle'],['a'],['Black'],['White']
+['rectangle'],['e'],['Black'],['Grey']
