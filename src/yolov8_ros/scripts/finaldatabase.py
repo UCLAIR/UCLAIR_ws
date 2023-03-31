@@ -22,14 +22,14 @@ class Dataf:
             dist=math.sqrt(pow(bb.xDISTANCE,2)+pow(bb.yDISTANCE,2))
             row_dict = {"Class":[bb.Class],"probability":[bb.probability],"long":[bb.long],"lat":[bb.lat],"Distance":[dist],"character":[bb.character],"color_shape":[bb.color_shape],"color_char":[bb.color_char]}
             # Check if row with same combination of class, character, color_shape, and color_char exists in the dataframe
-            existing_row = self.dataf.loc[(self.dataf['Class'] == bb.Class) & 
-                                          (self.dataf['character'] == bb.character) &
-                                          (self.dataf['color_shape'] == bb.color_shape) &
-                                          (self.dataf['color_char'] == bb.color_char), :]
-            if existing_row.empty or dist < existing_row.iloc[0]['Distance']:
-                # Add new row only if it does not exist or if distance is smaller than distance in dataframe
-                self.dataf = self.dataf.append(row_dict, ignore_index=True)
-            print(self.dataf.to_string())
+            if not any(value == "null" for value in [bb.character, bb.color_shape, bb.color_char]):
+            if self.dataf.empty:
+                self.dataf = pd.DataFrame(row_dict)
+            else:
+                existing_rows = self.dataf.loc[(self.dataf["Class"] == bb.Class) & (self.dataf["character"] == bb.character) & (self.dataf["color_shape"] == bb.color_shape) & (self.dataf["color_char"] == bb.color_char)]
+                if existing_rows.empty or dist < existing_rows["Distance"].min():
+                    self.dataf = self.dataf.append(row_dict, ignore_index=True)
+             print(self.dataf.to_string())
 
 if __name__ == "__main__":
     rospy.init_node('Finaldatabase')
