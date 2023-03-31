@@ -20,7 +20,7 @@ class Dataf:
     def data_sub_cb(self, msg):
         for bb in msg.bounding_boxes:
             dist=math.sqrt(pow(bb.xDISTANCE,2)+pow(bb.yDISTANCE,2))
-            row_dict = {"Class":[bb.Class],"probability":[bb.probability],"long":[bb.long],"lat":[bb.lat],"DISTANCE":[dist],"character":[bb.character],"color_shape":[bb.color_shape],"color_char":[bb.color_char]}
+            row_dict = {"Class":[bb.Class],"probability":[bb.probability],"long":[bb.long],"lat":[bb.lat],"Distance":[dist],"character":[bb.character],"color_shape":[bb.color_shape],"color_char":[bb.color_char]}
             # Check if row with same combination of class, character, color_shape, and color_char exists in the dataframe
             existing_row = self.dataf.loc[(self.dataf['Class'] == bb.Class) & 
                                           (self.dataf['character'] == bb.character) &
