@@ -15,3 +15,5 @@ for i, row in bottles_df.iterrows():
     
     # Add the matching row to the new dataframe
     matching_rows = matching_rows.append(min_dist_row, ignore_index=True)
+
+matching_rows = matching_rows.append({'shape': row['shape'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
