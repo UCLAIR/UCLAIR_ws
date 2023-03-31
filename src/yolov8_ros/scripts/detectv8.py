@@ -93,7 +93,7 @@ class Yolov8:
     def yolo(self, video_source):
         self.results = self.model.predict(
             source = video_source,
-            conf = 0.25,
+            conf = 0.1,
             show = False
         )
 

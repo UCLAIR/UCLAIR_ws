@@ -10,6 +10,10 @@ class Dataf:
 
         self.column_names=["Class","probability","long","lat","Distance","character","color_shape","color_char"]
         self.dataf=pd.DataFrame(columns=self.column_names)
+        
+        self.bottles_df = pd.read_csv('/home/jetson/UCLAIR_ws/src/yolov8_ros/database/BOTTLESDATA.txt', sep=',', header=None, names=['Class', 'character', 'color_shape', 'color_char'])
+        self.matches_df=pd.DataFrame(columns=self.column_names)
+        self.matching_rows=pd.DataFrame(columns=self.column_names)
 
         self.current_altitude_sub = rospy.Subscriber(
             name="BoundingBoxes",
@@ -29,17 +33,34 @@ class Dataf:
                     existing_rows = self.dataf.loc[(self.dataf["Class"] == bb.Class) & (self.dataf["character"] == bb.character) & (self.dataf["color_shape"] == bb.color_shape) & (self.dataf["color_char"] == bb.color_char)]
                     if existing_rows.empty or dist < existing_rows["Distance"].min():
                         self.dataf = self.dataf.append(row_dict, ignore_index=True)
-            print(self.dataf.to_string())
+            
 
 if __name__ == "__main__":
     rospy.init_node('Finaldatabase')
     RESULTS=Dataf()
     rospy.spin()
+
     RESULTS.dataf.to_csv('/home/jetson/UCLAIR_ws/src/yolov8_ros/database/finaldata.csv')
-    # Read data from BOTTLESDATA.txt and compare with dataf
-    bottles_df = pd.read_csv('BOTTLESDATA.txt', sep=',', header=None, names=['Class', 'character', 'color_shape', 'color_char'])
-    matches_df = pd.merge(bottles_df, self.dataf, on=['Class','character', 'color_shape', 'color_char'])
-    matches_df.to_csv('list.csv', index=False)
+
+    for i, row in RESULTS.bottles_df.iterrows():
+        # Find the matching row(s) in dataf
+        RESULTS.matches_df = RESULTS.dataf.loc[
+        (RESULTS.dataf['Class'] == row['Class']) &
+        (RESULTS.dataf['character'] == row['character']) &
+        (RESULTS.dataf['color_shape'] == row['color_shape']) &
+        (RESULTS.dataf['color_char'] == row['color_char'])]
+        # If there are no matches, continue to the next row
+        if RESULTS.matches_df.empty:
+            RESULTS.matching_rows=RESULTS.matching_rows.append({'Class': row['Class'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
+            continue
+        # Otherwise, find the row with the minimum Distance value
+        #min_dist_row = matches_df.loc[matches_df['Distance'].min()]
+        
+        # Add the matching row to the new dataframe
+        RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
+
+    RESULTS.matching_rows.to_csv('/home/jetson/UCLAIR_ws/src/yolov8_ros/database/list.csv')
+
 
 
 
