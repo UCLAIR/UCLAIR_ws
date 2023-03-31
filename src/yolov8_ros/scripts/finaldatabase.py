@@ -20,8 +20,15 @@ class Dataf:
     def data_sub_cb(self, msg):
         for bb in msg.bounding_boxes:
             dist=math.sqrt(pow(bb.xDISTANCE,2)+pow(bb.yDISTANCE,2))
-            datafadd=pd.DataFrame({"Class":[bb.Class],"probability":[bb.probability],"long":[bb.long],"lat":[bb.lat],"DISTANCE":[dist],"character":[bb.character],"color_shape":[bb.color_shape],"color_char":[bb.color_char]})
-            self.dataf=self.dataf.append(datafadd)
+            row_dict = {"Class":[bb.Class],"probability":[bb.probability],"long":[bb.long],"lat":[bb.lat],"DISTANCE":[dist],"character":[bb.character],"color_shape":[bb.color_shape],"color_char":[bb.color_char]}
+            # Check if row with same combination of class, character, color_shape, and color_char exists in the dataframe
+            existing_row = self.dataf.loc[(self.dataf['Class'] == bb.Class) & 
+                                          (self.dataf['character'] == bb.character) &
+                                          (self.dataf['color_shape'] == bb.color_shape) &
+                                          (self.dataf['color_char'] == bb.color_char), :]
+            if existing_row.empty or dist < existing_row.iloc[0]['Distance']:
+                # Add new row only if it does not exist or if distance is smaller than distance in dataframe
+                self.dataf = self.dataf.append(row_dict, ignore_index=True)
             print(self.dataf.to_string())
 
 if __name__ == "__main__":
