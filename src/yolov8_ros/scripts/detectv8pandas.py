@@ -14,6 +14,7 @@ from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
 from alphanumeric_detection import alphanumeric_detection
 from colour_detection import color_detection
+import pandas as pd
 
 
 class Yolov8:
@@ -26,7 +27,9 @@ class Yolov8:
         self.altitude = Float32()
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
-        
+        self.column_names=["Class","probability","long","lat","xDISTANCE","yDISTANCE","character","color_shape","color_char"]
+        self.dataf=pd.DataFrame(columns=self.column_names)
+
         self.current_global_position_sub = rospy.Subscriber(
             name="mavros/global_position/global",
             data_class=NavSatFix,
@@ -85,15 +88,20 @@ class Yolov8:
                 bb.Class = self.model.names[int(cls)]
                 x = x + 1
                 BB.bounding_boxes.append(bb)
-                
-        self.pred_pub.publish(BB)
 
+
+                datafadd=pd.DataFrame({"Class":[bb.Class],"probability":[bb.probability],"long":[bb.long],"lat":[bb.lat],"xDISTANCE":[bb.xDISTANCE],"yDISTANCE":[bb.yDISTANCE],"character":[bb.character],"color_shape":[bb.color_shape],"color_char":[bb.color_char]})
+                
+                self.dataf=self.dataf.append(datafadd)
+                print(self.dataf.to_string())
+
+        self.pred_pub.publish(BB)
                 
 
     def yolo(self, video_source):
         self.results = self.model.predict(
             source = video_source,
-            conf = 0.1,
+            conf = 0.25,
             show = False
         )
 
@@ -126,15 +134,3 @@ if __name__ == "__main__":
     
     RESULTS = Yolov8()
     rospy.spin()
-    
-    #rate = rospy.Rate(10)
-        
-    #while not rospy.is_shutdown():
-    #    pass
-
-
-
-
-    
-
-

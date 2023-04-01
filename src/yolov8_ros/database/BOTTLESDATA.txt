@@ -1,0 +1,5 @@
+['quarter_circle'],['w'],['Brown'],['Grey']
+['rectangle'],['b'],['Black'],['White']
+['trapezoid'],['s'],['Black'],['Grey']
+[Human]
+['rectangle'],['a'],['Black'],['White']
