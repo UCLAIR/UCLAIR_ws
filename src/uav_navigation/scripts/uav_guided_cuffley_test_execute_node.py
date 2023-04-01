@@ -16,8 +16,15 @@ class Execution:
     def __init__(self):
         self.current_global_waypoint = Float64MultiArray()
         self.in_global_navigation = Bool()
+        self.in_air_drop_navigation = Bool()
+        self.execute_drop = Bool()
     
         # ROS Publishers
+        self.execute_drop_pub = rospy.Publisher(
+            name="execute_drop_bottle",
+            data_class=Bool,
+            queue_size=10
+        )
 
         # ROS Subscribers
 
@@ -33,6 +40,12 @@ class Execution:
             callback=self.global_navigation_sub_cb
         )
 
+        self.in_air_drop_navigation_sub = rospy.Subscriber(
+            name="in_air_drop_navigation",
+            data_class=Bool,
+            callback=self.in_air_drop_navigation_sub_cb
+        )
+
     # Call back functions
 
     def global_waypoint_sub_cb(self, msg):
@@ -40,6 +53,9 @@ class Execution:
 
     def global_navigation_sub_cb(self, msg):
         self.in_global_navigation = msg.data
+
+    def in_air_drop_navigation_sub_cb(self, msg):
+        self.in_air_drop_navigation = msg.data
 
 
 if __name__ == "__main__":
@@ -63,20 +79,23 @@ if __name__ == "__main__":
 
         rate = rospy.Rate(10)
 
-        while (not rospy.is_shutdown()) and (mission.in_global_navigation):
+        while (not rospy.is_shutdown()):
             rate.sleep()
-            
-            rospy.loginfo("Executing mission")
 
-            uav.set_speed(5)
+            while mission.in_global_navigation:
 
-            uav.set_global_destination(
-                lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
-                alt=(uav.current_global_position.altitude) - uav.geoid_height(
-                    uav.current_global_position.latitude,
-                    uav.current_global_position.longitude
+                rospy.loginfo("Executing waypoint mission")
+
+                uav.set_speed(5)
+
+                uav.set_global_destination(
+                    lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
+                    alt=(uav.current_global_position.altitude) - uav.geoid_height(
+                        uav.current_global_position.latitude,
+                        uav.current_global_position.longitude
+                    )
                 )
-            )
+            
 
         rospy.loginfo("All global waypoints have successfully been reached")
         uav.set_mode("RTL")

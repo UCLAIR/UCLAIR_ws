@@ -6,8 +6,7 @@ from std_msgs.msg import Bool
 
 class PayloadDropping:
     def __init__(self):
-        self.execute_drop = Bool
-        self.drop_complete = Bool
+        self.execute_drop = Bool()
         
         # ROS Publishers
         self.bottle_dropping_execution_pub = rospy.Publisher(
@@ -17,15 +16,15 @@ class PayloadDropping:
         )
 
         # ROS Subscribers
-
-        self.drop_complete_sub = rospy.Subscriber(
-            name="drop_complete",
+        self.execute_drop_sub = rospy.Subscriber(
+            name="execute_drop_bottle",
             data_class=Bool,
-            callback=self.drop_complete_sub_cb
+            callback=self.execute_drop_sub_cb
         )
 
-    def drop_complete_sub_cb(self, msg):
-        self.drop_complete = msg.data
+
+    def execute_drop_sub_cb(self, msg):
+        self.execute_drop = msg.data
 
 
 if __name__ == "__main__":
@@ -36,12 +35,17 @@ if __name__ == "__main__":
 
         payload_dropping = PayloadDropping()
 
+        rate = rospy.Rate(10)
+
         while not rospy.is_shutdown():
 
             while counter < 1 and payload_dropping.execute_drop:
+
+                rate.sleep()
+                
                 rospy.loginfo("Dropping bottle")
 
-                payload_dropping.publish(True)
+                payload_dropping.bottle_dropping_execution_pub.publish(True)
                 
                 counter += 1
 
