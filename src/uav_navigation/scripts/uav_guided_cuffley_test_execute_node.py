@@ -75,27 +75,25 @@ if __name__ == "__main__":
             rospy.loginfo("Waiting for the UAV to be armed")
             time.sleep(2)
 
-        uav.takeoff(10)
+        uav.takeoff(5)
 
         rate = rospy.Rate(10)
 
-        while (not rospy.is_shutdown()):
+        while (not rospy.is_shutdown()) and mission.in_global_navigation:
             rate.sleep()
 
-            while mission.in_global_navigation:
+            rospy.loginfo("Executing waypoint mission")
 
-                rospy.loginfo("Executing waypoint mission")
+            # uav.set_speed(5)
 
-                uav.set_speed(5)
-
-                uav.set_global_destination(
-                    lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
-                    alt=(uav.current_global_position.altitude) - uav.geoid_height(
-                        uav.current_global_position.latitude,
-                        uav.current_global_position.longitude
-                    )
+            uav.set_global_destination(
+                lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
+                alt=(uav.current_global_position.altitude) - uav.geoid_height(
+                    uav.current_global_position.latitude,
+                    uav.current_global_position.longitude
                 )
-            
+            )
+        
 
         rospy.loginfo("All global waypoints have successfully been reached")
         uav.set_mode("RTL")

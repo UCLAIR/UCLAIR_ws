@@ -454,7 +454,7 @@ class Navigation:
             -1 (int): Takeoff unsuccessful
         """
 
-        self.arm()
+        # self.arm()
         takeoff_srv = CommandTOLRequest(0, 0, 0, 0, takeoff_alt)
         response = self.takeoff_client(takeoff_srv)
 
