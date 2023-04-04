@@ -3,6 +3,8 @@ import rospy
 from detection_msgs.msg import BoundingBox, BoundingBoxes
 import pandas as pd
 import math
+from getpass import getuser
+
 
 class Dataf:
     def __init__(self):
@@ -10,7 +12,7 @@ class Dataf:
         self.column_names=["Class","probability","long","lat","Distance","character","color_shape","color_char"]
         self.dataf=pd.DataFrame(columns=self.column_names)
         
-        self.bottles_df = pd.read_csv('/home/jetson/UCLAIR_ws/src/yolov8_ros/database/BOTTLESDATA.txt', sep=',', header=None, names=['Class', 'character', 'color_shape', 'color_char'])
+        self.bottles_df = pd.read_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/BOTTLESDATA.txt', sep=',', header=None, names=['Class', 'character', 'color_shape', 'color_char'])
         self.matches_df=pd.DataFrame(columns=self.column_names)
         self.matching_rows=pd.DataFrame(columns=self.column_names)
 
@@ -39,7 +41,7 @@ if __name__ == "__main__":
     RESULTS=Dataf()
     rospy.spin()
 
-    RESULTS.dataf.to_csv('/home/jetson/UCLAIR_ws/src/yolov8_ros/database/finaldata.csv')
+    RESULTS.dataf.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/data.csv')
 
     for i, row in RESULTS.bottles_df.iterrows():
         # Find the matching row(s) in dataf
@@ -58,7 +60,7 @@ if __name__ == "__main__":
         # Add the matching row to the new dataframe
         RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
 
-    RESULTS.matching_rows.to_csv('/home/jetson/UCLAIR_ws/src/yolov8_ros/database/list.csv')
+    RESULTS.matching_rows.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/list.csv')
 
 
 

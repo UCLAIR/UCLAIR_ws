@@ -14,13 +14,14 @@ from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
 from alphanumeric_detection import alphanumeric_detection
 from colour_detection import color_detection
+from getpass import getuser
 
 
 class Yolov8:
     def __init__(self):
         self.source = rospy.get_param("~source")
         self.weights = rospy.get_param("~weights")
-        self.model = YOLO(self.weights)
+        self.model = YOLO(f'/home/{getuser()}/UCLAIR_ws/best.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
         self.longitude = Float64()
         self.latitude = Float64()
@@ -93,10 +94,15 @@ class Yolov8:
                 
 
     def yolo(self, video_source):
+        if self.source == '/static_image':
+            show_results = True
+        else:
+            show_results = False
+        
         self.results = self.model.predict(
             source = video_source,
             conf = 0.1,
-            show = False
+            show = show_results
         )
 
     def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
