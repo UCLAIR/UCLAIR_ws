@@ -74,8 +74,10 @@ class Yolov8:
                 bb.xmax = int(xyxy[2])
                 bb.ymax = int(xyxy[3])
                 
-                #[bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,self.longitude,self.latitude,self.altitude)
-                [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
+                try:
+                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,self.longitude,self.latitude,self.altitude)
+                except:
+                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
                 
                 [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
