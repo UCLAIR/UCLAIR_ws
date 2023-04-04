@@ -19,7 +19,8 @@ from colour_detection import color_detection
 class Yolov8:
     def __init__(self):
         self.source = rospy.get_param("~source")
-        self.model = YOLO('/home/jetson/UCLAIR_ws/src/yolov8_ros/best.pt')
+        self.weights = rospy.get_param("~weights")
+        self.model = YOLO(self.weights)
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
         self.longitude = Float64()
         self.latitude = Float64()
