@@ -1,0 +1,6 @@
+<launch>
+
+    <node name="static_image_publisher" pkg="sensors" type="static.py" output="screen" respawn="true"/>
+
+</launch>
+
