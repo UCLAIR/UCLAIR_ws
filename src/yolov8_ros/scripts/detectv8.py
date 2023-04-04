@@ -41,8 +41,7 @@ class Yolov8:
         )
         
         
-        self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
-        #self.sub = rospy.Subscriber(self.source,Image, self.get_image)
+        self.sub = rospy.Subscriber(self.source,Image, self.get_image)
         self.pred_pub = rospy.Publisher('BoundingBoxes', BoundingBoxes, queue_size = 10)
         
         self.fx = 240
