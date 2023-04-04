@@ -39,28 +39,29 @@ class Dataf:
 if __name__ == "__main__":
     rospy.init_node('yolo_data_sorter')
     RESULTS=Dataf()
-    rospy.spin()
+    
+    while not rospy.is_shutdown():
 
-    RESULTS.dataf.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/data.csv')
+        RESULTS.dataf.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/data.csv')
 
-    for i, row in RESULTS.bottles_df.iterrows():
-        # Find the matching row(s) in dataf
-        RESULTS.matches_df = RESULTS.dataf.loc[
-        (RESULTS.dataf['Class'] == row['Class']) &
-        (RESULTS.dataf['character'] == row['character']) &
-        (RESULTS.dataf['color_shape'] == row['color_shape']) &
-        (RESULTS.dataf['color_char'] == row['color_char'])]
-        # If there are no matches, continue to the next row
-        if RESULTS.matches_df.empty:
-            RESULTS.matching_rows=RESULTS.matching_rows.append({'Class': row['Class'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
-            continue
-        # Otherwise, find the row with the minimum Distance value
-        #min_dist_row = matches_df.loc[matches_df['Distance'].min()]
+        for i, row in RESULTS.bottles_df.iterrows():
+            # Find the matching row(s) in dataf
+            RESULTS.matches_df = RESULTS.dataf.loc[
+            (RESULTS.dataf['Class'] == row['Class']) &
+            (RESULTS.dataf['character'] == row['character']) &
+            (RESULTS.dataf['color_shape'] == row['color_shape']) &
+            (RESULTS.dataf['color_char'] == row['color_char'])]
+            # If there are no matches, continue to the next row
+            if RESULTS.matches_df.empty:
+                RESULTS.matching_rows=RESULTS.matching_rows.append({'Class': row['Class'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
+                continue
+            # Otherwise, find the row with the minimum Distance value
+            #min_dist_row = matches_df.loc[matches_df['Distance'].min()]
         
-        # Add the matching row to the new dataframe
-        RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
+            # Add the matching row to the new dataframe
+            RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
 
-    RESULTS.matching_rows.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/list.csv')
+        RESULTS.matching_rows.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/list.csv')
 
 
 
