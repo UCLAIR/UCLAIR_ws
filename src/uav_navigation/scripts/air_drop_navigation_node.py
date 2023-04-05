@@ -14,7 +14,7 @@ class AirDropNavigation:
         self.GPS_drop_5 = []
 
         self.drop_number_counter = Int64()
-        self.GPS_drop = [self.GPS_drop_1]
+        self.GPS_drop = [self.GPS_drop_1, self.GPS_drop_2]
 
         # ROS Publishers
         self.in_air_drop_navigation_pub = rospy.Publisher(
@@ -82,7 +82,7 @@ if __name__ == "__main__":
             if air_drop.in_air_drop_navigation:
                 rospy.loginfo("In Air Drop Navigation")
 
-                rospy.loginfo(f"Air Drop Number: {air_drop.drop_number_counter}")
+                rospy.loginfo(f"Air Drop Number: {air_drop.drop_number_counter + 1}")
             else:
                 rospy.loginfo("In Global Navigation")
 

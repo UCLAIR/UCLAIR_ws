@@ -4,8 +4,8 @@ import rospy
 from std_msgs.msg import Bool
 
 def talker():
-    pub = rospy.Publisher('/servo_motor_control', Bool, queue_size=10)
-    rospy.init_node('payload_dropping_node')
+    pub = rospy.Publisher('message', Bool, queue_size=10)
+    rospy.init_node('chatter_node')
 
     execute_dropping = True # from the navigation code
     counter = 0

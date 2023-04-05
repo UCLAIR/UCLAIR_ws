@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 """
-This node is to execute mission in Cuffley
+This node is to execute guided mission in Cuffley
 
-The first mission is to check 
-
+This mission is to use the Jetson Nano to control the UAV's takeoff,
+flight mission, and landing.
 """
 
 import rospy
@@ -20,11 +20,6 @@ class Execution:
         self.execute_drop = Bool()
     
         # ROS Publishers
-        self.execute_drop_pub = rospy.Publisher(
-            name="execute_drop_bottle",
-            data_class=Bool,
-            queue_size=10
-        )
 
         # ROS Subscribers
 
@@ -40,12 +35,6 @@ class Execution:
             callback=self.global_navigation_sub_cb
         )
 
-        self.in_air_drop_navigation_sub = rospy.Subscriber(
-            name="in_air_drop_navigation",
-            data_class=Bool,
-            callback=self.in_air_drop_navigation_sub_cb
-        )
-
     # Call back functions
 
     def global_waypoint_sub_cb(self, msg):
@@ -53,9 +42,6 @@ class Execution:
 
     def global_navigation_sub_cb(self, msg):
         self.in_global_navigation = msg.data
-
-    def in_air_drop_navigation_sub_cb(self, msg):
-        self.in_air_drop_navigation = msg.data
 
 
 if __name__ == "__main__":
@@ -69,12 +55,14 @@ if __name__ == "__main__":
 
         uav.wait4connect()
 
-        uav.set_mode("GUIDED")
-
-        while (uav.current_state.armed) == False:
-            rospy.loginfo("Waiting for the UAV to be armed")
-            time.sleep(2)
-
+        while True:
+            if uav.current_state.armed == True:
+                rospy.loginfo("Armed")
+                if uav.current_state.mode == "GUIDED":
+                    rospy.loginfo("GUIDED MODE")
+                    break
+        
+        # Change this parameter to increase the height of the mission
         uav.takeoff(5)
 
         rate = rospy.Rate(10)
@@ -84,7 +72,7 @@ if __name__ == "__main__":
 
             rospy.loginfo("Executing waypoint mission")
 
-            # uav.set_speed(5)
+            uav.set_speed(20)
 
             uav.set_global_destination(
                 lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
