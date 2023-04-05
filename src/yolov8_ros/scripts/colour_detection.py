@@ -18,7 +18,6 @@ class ImageProcessingClassifier:
         "pink": [255, 145, 175]
     }
 
-
     def __init__(self, image_path):
         self.image_path = image_path
         self.image = cv2.imread(image_path)
