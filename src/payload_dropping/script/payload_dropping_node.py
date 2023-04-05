@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int16
 
 
 class PayloadDropping:
     def __init__(self):
         self.execute_drop = False
+
+        self.drop_number_counter = Int16()
         
         # ROS Publishers
         self.bottle_dropping_execution_pub = rospy.Publisher(
@@ -21,7 +23,6 @@ class PayloadDropping:
             data_class=Bool,
             callback=self.execute_drop_sub_cb
         )
-
 
     def execute_drop_sub_cb(self, msg):
         self.execute_drop = msg.data
@@ -51,6 +52,7 @@ if __name__ == "__main__":
 
             if payload_dropping.execute_drop == False:
                 counter = 0
+
 
     except rospy.ROSInterruptException:
         pass

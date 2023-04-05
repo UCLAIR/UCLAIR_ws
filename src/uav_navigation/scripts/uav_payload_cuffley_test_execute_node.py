@@ -13,7 +13,7 @@ Laslty, the UAV is set to RTL and land autonomously.
 
 import rospy
 from navigation_functions import *
-from std_msgs.msg import Float64MultiArray, Bool
+from std_msgs.msg import Float64MultiArray, Bool, Int16
 import time
 
 class Execution:
@@ -24,6 +24,9 @@ class Execution:
         self.current_air_drop_waypoint = Float64MultiArray()
         self.in_air_drop_navigation = Bool()
 
+        self.drop_number_counter = Int16()
+        self.drop_checker = 0
+
         # ROS Publishers
 
         self.execute_drop_pub = rospy.Publisher(
@@ -33,7 +36,7 @@ class Execution:
         )
 
         # ROS Subscribers
-        
+
         self.global_waypoint_sub = rospy.Subscriber(
             name="global_waypoint",
             data_class=Float64MultiArray,
@@ -58,6 +61,12 @@ class Execution:
             callback=self.in_air_drop_navigation_sub_cb
         )
 
+        self.drop_number_counter_sub = rospy.Subscriber(
+            name="drop_number",
+            data_class=Int16,
+            callback=self.drop_number_counter_sub_cb
+        )
+
 
     # Call back functions
 
@@ -72,6 +81,9 @@ class Execution:
 
     def in_air_drop_navigation_sub_cb(self, msg):
         self.in_air_drop_navigation = msg.data
+
+    def drop_number_counter_sub_cb(self, msg):
+        self.drop_number_counter = msg
 
 
 if __name__ == "__main__":
@@ -136,9 +148,14 @@ if __name__ == "__main__":
                 rospy.loginfo("Navigating to air drop target")
 
             else:
-                rospy.loginfo("Payload dropping")
-                mission.execute_drop_pub.publish(True)
-                time.sleep(10)
+                while mission.drop_checker == mission.drop_number_counter.data:
+                    rate.sleep()
+                    rospy.loginfo(f"mission.drop_checker: {mission.drop_checker}")
+                    rospy.loginfo(f"mission.drop_number_counter.data: {mission.drop_number_counter.data}")
+                    rospy.loginfo("Payload dropping")
+                    mission.execute_drop_pub.publish(True)
+                
+                mission.drop_checker += 1
 
         
         rospy.loginfo("All air drop targets have successfully been reached and dropped")
