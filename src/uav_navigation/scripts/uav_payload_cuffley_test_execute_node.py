@@ -25,6 +25,7 @@ class Execution:
         self.in_air_drop_navigation = Bool()
 
         # ROS Publishers
+
         self.execute_drop_pub = rospy.Publisher(
             name="execute_drop_bottle",
             data_class=Bool,
@@ -32,7 +33,7 @@ class Execution:
         )
 
         # ROS Subscribers
-
+        
         self.global_waypoint_sub = rospy.Subscriber(
             name="global_waypoint",
             data_class=Float64MultiArray,
@@ -56,6 +57,7 @@ class Execution:
             data_class=Bool,
             callback=self.in_air_drop_navigation_sub_cb
         )
+
 
     # Call back functions
 
@@ -113,29 +115,32 @@ if __name__ == "__main__":
         rospy.loginfo("All global waypoints have successfully been reached")
 
         while (not rospy.is_shutdown()) and (mission.in_air_drop_navigation):
+            rospy.loginfo("Executing air drop mission")
 
             rate.sleep()
+
+            uav.set_global_destination(
+                lat=mission.current_air_drop_waypoint[0], lon=mission.current_air_drop_waypoint[1],
+                alt=(uav.current_global_position.altitude) - uav.geoid_height(
+                    uav.current_global_position.latitude,
+                    uav.current_global_position.longitude
+                )
+            )
+
+            uav.set_speed(10)
 
             if uav.check_waypoint_reached() == False:
 
                 mission.execute_drop_pub.publish(False)
 
-                rospy.loginfo("Executing air drop")
-
-                uav.set_speed(10)
-
-                uav.set_global_destination(
-                    lat=mission.current_air_drop_waypoint[0], lon=mission.current_air_drop_waypoint[1],
-                    alt=(uav.current_global_position.altitude) - uav.geoid_height(
-                        uav.current_global_position.latitude,
-                        uav.current_global_position.longitude
-                    )
-                )
+                rospy.loginfo("Navigating to air drop target")
 
             else:
+                rospy.loginfo("Payload dropping")
                 mission.execute_drop_pub.publish(True)
+                time.sleep(10)
 
-                
+        
         rospy.loginfo("All air drop targets have successfully been reached and dropped")
 
         uav.set_mode("RTL")

@@ -6,7 +6,7 @@ from std_msgs.msg import Bool
 
 class PayloadDropping:
     def __init__(self):
-        self.execute_drop = Bool()
+        self.execute_drop = False
         
         # ROS Publishers
         self.bottle_dropping_execution_pub = rospy.Publisher(
