@@ -19,7 +19,7 @@ class ImageProcessingClassifier:
     }
 
     def __init__(self, image):
-        self.image = self.crop_center(self,image)
+        self.image = self.crop_center(self, image)
 
     @staticmethod
     def crop_center(self, image_cv2):
@@ -36,7 +36,7 @@ class ImageProcessingClassifier:
         right = (width + new_width) // 2
         bottom = (height + new_height) // 2
         return image.crop((left, top, right, bottom))
-      
+
     def get_dominant_color(self, k=3):
 
         im_small = self.image.resize((150, 150))
@@ -46,12 +46,11 @@ class ImageProcessingClassifier:
 
         kmeans = KMeans(n_clusters=k)
         kmeans.fit(im_flat)
-        colors = kmeans.cluster_centers_
 
+        colors = kmeans.cluster_centers_
         hex_colors = []
         for color in colors:
             hex_colors.append(self.convert_rgb_to_hex(color))
-
         color_names = []
         for hex_color in hex_colors:
             closest_name = ""
@@ -64,7 +63,6 @@ class ImageProcessingClassifier:
             if closest_name == "":
                 raise ValueError(f"No color name found for hex color {hex_color}")
             color_names.append(closest_name)
-
         pixel_counts = []
         for i in range(k):
             pixel_counts.append(list(kmeans.labels_).count(i))
@@ -82,9 +80,11 @@ class ImageProcessingClassifier:
 
         return main_colors
 
+
     @staticmethod
     def convert_rgb_to_hex(rgb):
         return "#{:02x}{:02x}{:02x}".format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
 
     @staticmethod
     def convert_hex_to_rgb(hex_color):
@@ -97,10 +97,11 @@ class ImageProcessingClassifier:
         r2, g2, b2 = rgb2
         return ((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2) ** 0.5
 
+
 def color_detection(image):
     classifier = ImageProcessingClassifier(image)
     dominant_colors = classifier.get_dominant_color()
     if len(dominant_colors) > 1:
         return dominant_colors[0], dominant_colors[1]
     else:
-        return 'null','null'
+        return 'null', 'null'
