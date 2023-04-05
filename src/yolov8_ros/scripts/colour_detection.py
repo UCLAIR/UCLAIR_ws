@@ -1,4 +1,5 @@
 import sys
+from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
 import cv2
@@ -6,58 +7,50 @@ import cv2
 
 class ImageProcessingClassifier:
     COLORS = {
-        "white": [255, 255, 255],
-        "black": [0, 0, 0],
-        "grey": [169, 169, 169],
-        "red": [255, 0, 0],
-        "blue": [0, 0, 255],
-        "yellow": [255, 255, 0],
-        "purple": [128, 0, 128],
-        "brown": [92, 64, 51],
-        "orange": [255, 165, 0],
-        "pink": [255, 145, 175]
+        "White": [255, 255, 255],
+        "Black": [0, 0, 0],
+        "Grey": [128, 128, 128],
+        "Red": [255, 0, 0],
+        "Blue": [0, 0, 255],
+        "Yellow": [255, 255, 0],
+        "Purple": [128, 0, 128],
+        "Brown": [165, 42, 42],
+        "Orange": [255, 165, 0]
     }
 
-    def __init__(self, image_path):
-        self.image_path = image_path
-        self.image = cv2.imread(image_path)
+    def __init__(self, image):
+        self.image = self.crop_center(self, image)
+
+    @staticmethod
+    def crop_center(self, image_cv2):
+        # """Convert cv2 Image into PIL Image"""
+        # Convert the color format from BGR to RGB
+        cv2_img = cv2.cvtColor(image_cv2, cv2.COLOR_BGR2RGB)
+        # Convert the cv2 image to a PIL image
+        image = Image.fromarray(cv2_img)
+        """Crop the given PIL Image from the center to 4 times smaller."""
+        width, height = image.size
+        new_width, new_height = width // 2, height // 2
+        left = (width - new_width) // 2
+        top = (height - new_height) // 2
+        right = (width + new_width) // 2
+        bottom = (height + new_height) // 2
+        return image.crop((left, top, right, bottom))
 
     def get_dominant_color(self, k=3):
-        rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
-        blurred = cv2.GaussianBlur(rgb_image, (17, 17), 0)
+        im_small = self.image.resize((150, 150))
+        im_arr = np.array(im_small)
 
-        gray = cv2.cvtColor(blurred, cv2.COLOR_RGB2GRAY)
-
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 5, 1)
-
-        cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
-        cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-
-        max_contour = max(cnts, key=cv2.contourArea)
-
-        mask = np.zeros_like(thresh)
-        cv2.drawContours(mask, [max_contour], 0, (255, 255, 255), -1)
-
-        mask_rgb = cv2.cvtColor(mask, cv2.COLOR_GRAY2RGB)
-        mask_rgb[np.where((mask_rgb == [0, 0, 0]).all(axis=2))] = [255, 145, 175]
-
-        image_small = cv2.bitwise_and(rgb_image, mask_rgb)
-
-        image_small = cv2.resize(image_small, (50, 50))
-
-        image_array = np.array(image_small)
-
-        im_flat = image_array.reshape((image_array.shape[0] * image_array.shape[1]), image_array.shape[2])
+        im_flat = im_arr.reshape((im_arr.shape[0] * im_arr.shape[1]), im_arr.shape[2])
 
         kmeans = KMeans(n_clusters=k)
         kmeans.fit(im_flat)
-        colors = kmeans.cluster_centers_
 
+        colors = kmeans.cluster_centers_
         hex_colors = []
         for color in colors:
             hex_colors.append(self.convert_rgb_to_hex(color))
-
         color_names = []
         for hex_color in hex_colors:
             closest_name = ""
@@ -70,32 +63,28 @@ class ImageProcessingClassifier:
             if closest_name == "":
                 raise ValueError(f"No color name found for hex color {hex_color}")
             color_names.append(closest_name)
-
         pixel_counts = []
         for i in range(k):
             pixel_counts.append(list(kmeans.labels_).count(i))
 
         color_map = {}
         for i in range(k):
-            if color_names[i] != 'pink':
-                color_map[color_names[i]] = pixel_counts[i]
+            color_map[color_names[i]] = pixel_counts[i]
 
         sorted_colors = sorted(color_map.items(), key=lambda x: x[1], reverse=True)
 
-        dominant_colors = []
-        for color in sorted_colors[:2]:
-            dominant_colors.append(color[0])
+        main_colors = []
 
-        if len(dominant_colors) > 1:
-            return dominant_colors[0], dominant_colors[1]
-        else:
-            return 'null', 'null'
+        for color in sorted_colors[:3]:
+            main_colors.append(color[0])
+
+        return main_colors
+
 
     @staticmethod
     def convert_rgb_to_hex(rgb):
-        # Convert RGB to hex
-        hex_color = '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
-        return hex_color
+        return "#{:02x}{:02x}{:02x}".format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
 
     @staticmethod
     def convert_hex_to_rgb(hex_color):
@@ -112,4 +101,7 @@ class ImageProcessingClassifier:
 def color_detection(image):
     classifier = ImageProcessingClassifier(image)
     dominant_colors = classifier.get_dominant_color()
-    return dominant_colors
+    if len(dominant_colors) > 1:
+        return dominant_colors[0], dominant_colors[1]
+    else:
+        return 'null', 'null'
