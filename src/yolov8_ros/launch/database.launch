@@ -1,7 +1,4 @@
 <launch>
-    <arg name="source" default="/database_raw"/>
-
-    <node pkg="yolov8_ros" name="database" type="database.py" output="screen">
-        <param name="source" value="$(arg source)"/>
+    <node pkg="yolov8_ros" name="yolo_data_sorter" type="database.py" output="screen">
     </node>
 </launch>

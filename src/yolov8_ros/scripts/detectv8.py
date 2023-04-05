@@ -14,12 +14,14 @@ from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
 from alphanumeric_detection import alphanumeric_detection
 from colour_detection import color_detection
+from getpass import getuser
 
 
 class Yolov8:
     def __init__(self):
         self.source = rospy.get_param("~source")
-        self.model = YOLO('/home/jetson/UCLAIR_ws/src/yolov8_ros/best.pt')
+        self.weights = rospy.get_param("~weights")
+        self.model = YOLO(f'/home/{getuser()}/UCLAIR_ws/best.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
         self.longitude = Float64()
         self.latitude = Float64()
@@ -41,8 +43,7 @@ class Yolov8:
         )
         
         
-        self.sub = rospy.Subscriber("camera_raw",Image, self.get_image)
-        #self.sub = rospy.Subscriber(self.source,Image, self.get_image)
+        self.sub = rospy.Subscriber(self.source,Image, self.get_image)
         self.pred_pub = rospy.Publisher('BoundingBoxes', BoundingBoxes, queue_size = 10)
         
         self.fx = 240
@@ -74,8 +75,10 @@ class Yolov8:
                 bb.xmax = int(xyxy[2])
                 bb.ymax = int(xyxy[3])
                 
-                #[bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,self.longitude,self.latitude,self.altitude)
-                [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
+                try:
+                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,self.longitude,self.latitude,self.altitude)
+                except:
+                    [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
                 
                 [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
@@ -91,10 +94,15 @@ class Yolov8:
                 
 
     def yolo(self, video_source):
+        if self.source == '/static_image':
+            show_results = True
+        else:
+            show_results = False
+        
         self.results = self.model.predict(
             source = video_source,
             conf = 0.1,
-            show = False
+            show = show_results
         )
 
     def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
