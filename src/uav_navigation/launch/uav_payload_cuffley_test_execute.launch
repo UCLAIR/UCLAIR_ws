@@ -5,3 +5,4 @@
     <node name="payload_dropping_node" pkg="payload_dropping" type="payload_dropping_node.py" output="screen" />
     <node name="uav_payload_cuffley_test_execute_node" pkg="uav_navigation" type="uav_payload_cuffley_test_execute_node.py" output="screen"/>
 <launch>
+

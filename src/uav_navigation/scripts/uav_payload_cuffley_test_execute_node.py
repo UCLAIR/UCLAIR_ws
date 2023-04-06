@@ -14,7 +14,7 @@ Laslty, the UAV is set to RTL and land autonomously.
 import rospy
 from navigation_functions import *
 from std_msgs.msg import Float64MultiArray, Bool, Int16
-import time
+
 
 class Execution:
     def __init__(self):
