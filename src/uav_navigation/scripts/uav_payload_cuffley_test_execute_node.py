@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
             rospy.loginfo("Executing waypoint mission")
 
-            uav.set_speed(20)
+            uav.set_speed(20) #cuufleyyyyy
 
             uav.set_global_destination(
                 lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
@@ -139,7 +139,7 @@ if __name__ == "__main__":
                 )
             )
 
-            uav.set_speed(10)
+            uav.set_speed(10) #cufffffffleyyyy
 
             if uav.check_waypoint_reached() == False:
 

@@ -20,12 +20,12 @@ class ImageProcessingClassifier:
 
     def __init__(self, image_path):
         self.image_path = image_path
-        self.image = cv2.imread(image_path)
+        self.image = image_path
 
     def get_dominant_color(self, k=3):
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
-        blurred = cv2.GaussianBlur(rgb_image, (17, 17), 0)
+        blurred = cv2.GaussianBlur(rgb_image, (11, 11), 0)
 
         gray = cv2.cvtColor(blurred, cv2.COLOR_RGB2GRAY)
 
@@ -109,7 +109,7 @@ class ImageProcessingClassifier:
         return ((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2) ** 0.5
 
 
-def color_detection2(image):
+def color_detection(image):
     classifier = ImageProcessingClassifier(image)
     dominant_colors = classifier.get_dominant_color()
     return dominant_colors
