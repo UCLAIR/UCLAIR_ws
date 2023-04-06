@@ -13,7 +13,7 @@ from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
 from alphanumeric_detection import alphanumeric_detection
-from colour_detectionv2 import color_detection
+from colour_detection import color_detection
 from getpass import getuser
 
 

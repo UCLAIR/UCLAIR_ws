@@ -25,7 +25,7 @@ class ImageProcessingClassifier:
     def get_dominant_color(self, k=3):
         rgb_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2RGB)
 
-        blurred = cv2.GaussianBlur(rgb_image, (17, 17), 0)
+        blurred = cv2.GaussianBlur(rgb_image, (11, 11), 0)
 
         gray = cv2.cvtColor(blurred, cv2.COLOR_RGB2GRAY)
 
