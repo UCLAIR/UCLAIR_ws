@@ -1,0 +1,3 @@
+<launch>
+    <node name="payload_dropping_node" pkg="payload_dropping" type="payload_dropping_node.py" output="screen" />
+</launch>
