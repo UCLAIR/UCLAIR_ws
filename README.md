@@ -84,4 +84,15 @@ You need to install pygeodesy. The dependencies you need: geographiclib 1.52, Ge
 pip3 install pygeodesy
 ```
 
+## To run SITL payload drop
+
+```
+cd ardupilot/ArduCopter/ && sim_vehicle.py -v ArduCopter --console --map
+
+roslaunch mavros apm2.launch fcu_url:=udp://localhost:14550@
+
+roslaunch uav_navigation uav_payload_cuffley_test_execute.launch
+```
+
+
 

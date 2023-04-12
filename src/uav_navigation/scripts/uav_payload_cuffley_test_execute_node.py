@@ -13,8 +13,8 @@ Laslty, the UAV is set to RTL and land autonomously.
 
 import rospy
 from navigation_functions import *
-from std_msgs.msg import Float64MultiArray, Bool
-import time
+from std_msgs.msg import Float64MultiArray, Bool, Int16
+
 
 class Execution:
     def __init__(self):
@@ -24,7 +24,11 @@ class Execution:
         self.current_air_drop_waypoint = Float64MultiArray()
         self.in_air_drop_navigation = Bool()
 
+        self.drop_number_counter = Int16()
+        self.drop_checker = 0
+
         # ROS Publishers
+
         self.execute_drop_pub = rospy.Publisher(
             name="execute_drop_bottle",
             data_class=Bool,
@@ -57,6 +61,13 @@ class Execution:
             callback=self.in_air_drop_navigation_sub_cb
         )
 
+        self.drop_number_counter_sub = rospy.Subscriber(
+            name="drop_number",
+            data_class=Int16,
+            callback=self.drop_number_counter_sub_cb
+        )
+
+
     # Call back functions
 
     def global_waypoint_sub_cb(self, msg):
@@ -70,6 +81,9 @@ class Execution:
 
     def in_air_drop_navigation_sub_cb(self, msg):
         self.in_air_drop_navigation = msg.data
+
+    def drop_number_counter_sub_cb(self, msg):
+        self.drop_number_counter = msg
 
 
 if __name__ == "__main__":
@@ -100,7 +114,7 @@ if __name__ == "__main__":
 
             rospy.loginfo("Executing waypoint mission")
 
-            uav.set_speed(20)
+            uav.set_speed(20) #cuufleyyyyy
 
             uav.set_global_destination(
                 lat=mission.current_global_waypoint[0], lon=mission.current_global_waypoint[1],
@@ -113,29 +127,37 @@ if __name__ == "__main__":
         rospy.loginfo("All global waypoints have successfully been reached")
 
         while (not rospy.is_shutdown()) and (mission.in_air_drop_navigation):
+            rospy.loginfo("Executing air drop mission")
 
             rate.sleep()
+
+            uav.set_global_destination(
+                lat=mission.current_air_drop_waypoint[0], lon=mission.current_air_drop_waypoint[1],
+                alt=(uav.current_global_position.altitude) - uav.geoid_height(
+                    uav.current_global_position.latitude,
+                    uav.current_global_position.longitude
+                )
+            )
+
+            uav.set_speed(10) #cufffffffleyyyy
 
             if uav.check_waypoint_reached() == False:
 
                 mission.execute_drop_pub.publish(False)
 
-                rospy.loginfo("Executing air drop")
-
-                uav.set_speed(10)
-
-                uav.set_global_destination(
-                    lat=mission.current_air_drop_waypoint[0], lon=mission.current_air_drop_waypoint[1],
-                    alt=(uav.current_global_position.altitude) - uav.geoid_height(
-                        uav.current_global_position.latitude,
-                        uav.current_global_position.longitude
-                    )
-                )
+                rospy.loginfo("Navigating to air drop target")
 
             else:
-                mission.execute_drop_pub.publish(True)
-
+                while mission.drop_checker == mission.drop_number_counter.data:
+                    rate.sleep()
+                    rospy.loginfo(f"mission.drop_checker: {mission.drop_checker}")
+                    rospy.loginfo(f"mission.drop_number_counter.data: {mission.drop_number_counter.data}")
+                    rospy.loginfo("Payload dropping")
+                    mission.execute_drop_pub.publish(True)
                 
+                mission.drop_checker += 1
+
+        
         rospy.loginfo("All air drop targets have successfully been reached and dropped")
 
         uav.set_mode("RTL")
