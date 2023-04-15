@@ -38,9 +38,9 @@ class OCRDetectionClassifier:
 
     def OCR_image_rotation(self):
 
-        resized_img = cv2.resize(self.image, (600, 600))
+        resized_img = imutils.resize(self.image, 600, 600,inter=cv2.INTER_AREA)
 
-        filtered_img = self.image_processing3(resized_img)
+        filtered_img = self.image_processing(resized_img)
 
         cropped = self.center_crop(filtered_img, (300, 400))
 
