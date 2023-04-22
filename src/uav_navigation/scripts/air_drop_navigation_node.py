@@ -7,8 +7,8 @@ from std_msgs.msg import Bool, Float64MultiArray, Int16
 class AirDropNavigation:
     def __init__(self):
         self.in_air_drop_navigation = Bool()
-        self.GPS_drop_1 = [-35.36366699, 149.16395691]
-        self.GPS_drop_2 = [-35.36328456, 149.16439751]
+        self.GPS_drop_1 = [51.7054267, -0.1298417]
+        self.GPS_drop_2 = [51.7053768, -0.1296915]
         self.GPS_drop_3 = []
         self.GPS_drop_4 = []
         self.GPS_drop_5 = []

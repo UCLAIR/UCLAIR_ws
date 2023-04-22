@@ -105,7 +105,7 @@ if __name__ == "__main__":
                     rospy.loginfo("GUIDED MODE")
                     break
 
-        uav.takeoff(25)
+        uav.takeoff(5)
 
         rate = rospy.Rate(10)
 
