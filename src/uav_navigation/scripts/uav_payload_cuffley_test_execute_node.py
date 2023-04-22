@@ -127,9 +127,13 @@ if __name__ == "__main__":
         rospy.loginfo("All global waypoints have successfully been reached")
 
         while (not rospy.is_shutdown()) and (mission.in_air_drop_navigation):
-            rospy.loginfo("Executing air drop mission")
 
             rate.sleep()
+
+            rospy.loginfo("Executing air drop mission")
+
+            if mission.in_air_drop_navigation == False:
+                break
 
             uav.set_global_destination(
                 lat=mission.current_air_drop_waypoint[0], lon=mission.current_air_drop_waypoint[1],
@@ -150,6 +154,10 @@ if __name__ == "__main__":
             else:
                 while mission.drop_checker == mission.drop_number_counter.data:
                     rate.sleep()
+
+                    if mission.drop_checker != mission.drop_number_counter.data:
+                        break
+
                     rospy.loginfo(f"mission.drop_checker: {mission.drop_checker}")
                     rospy.loginfo(f"mission.drop_number_counter.data: {mission.drop_number_counter.data}")
                     rospy.loginfo("Payload dropping")
