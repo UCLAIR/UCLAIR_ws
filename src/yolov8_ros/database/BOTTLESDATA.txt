@@ -1,5 +1,5 @@
-['trapezoid'],['1'],['Orange'],['Brown']
-['rectangle'],['b'],['Black'],['White']
-['trapezoid'],['s'],['Black'],['Grey']
-['Human']
-['rectangle'],['a'],['Black'],['White']
+trapezoid,1,orange,brown
+semicircle,2,green,blue
+trapezoid,s,black,grey
+Human
+heptagon,7,black,brown
