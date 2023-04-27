@@ -12,7 +12,7 @@ from pygeodesy.geoids import GeoidPGM
 from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
-from alphanumeric_detectionv2 import alphanumeric_detection
+from alphanumeric_detectionv2 import alphanumeric_detection2
 from colour_detectionv2 import color_detection
 from getpass import getuser
 
@@ -81,7 +81,7 @@ class Yolov8:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
                 
                 [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
-                bb.character = alphanumeric_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                bb.character = alphanumeric_detection2(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
@@ -107,6 +107,7 @@ class Yolov8:
 
     def localisation(self,x1,y1,x2,y2,long_drone,lat_drone,alt_drone):
         #https://snehilsanyal.github.io/files/paper1.pdf
+        
         x_center = ((x1 + x2)/2)
         y_center = ((y1 + y2)/2)
         X = (alt_drone)*(x_center - self.cx)/self.fx
@@ -117,15 +118,26 @@ class Yolov8:
         dX = s*math.sin(b)
         dY = s*math.cos(b)
 
-        deltalong = dX/(11320*math.cos(lat_drone))
-        deltalat = dY/(110540)
+        # deltalong = dX/(11320*math.cos(lat_drone))
+        # deltalat = dY/(110540)
 
-        long = long_drone + deltalong
-        lat = lat_drone + deltalat
+        # long = long_drone + deltalong
+        # lat = lat_drone + deltalat
         
-        return long, lat, X, Y
-    
-
+        # return long, lat, X, Y
+        
+        ########################################################################
+        #https://dronekit-python.readthedocs.io/en/latest/examples/mission_basic.html
+        
+        earth_radius = 6378137
+        
+        dlat = Y/earth_radius
+        dlon = X/(earth_radius*math.cos(math.pi*lat_drone/180))
+        
+        newlat = lat_drone + (dlat * 180/math.pi)
+        newlon = long_drone + (dlon * 180/math.pi)
+        
+        return newlon, newlat, X, Y      
     
 
 
