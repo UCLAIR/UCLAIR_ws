@@ -10,7 +10,7 @@ from cv_bridge import CvBridge,CvBridgeError
 
 def talker():
 
-	cap = cv2.VideoCapture(0)
+	cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/main.264')
 	print(cap.isOpened())
 	bridge = CvBridge()
 	

@@ -7,8 +7,8 @@ from std_msgs.msg import Bool, Float64MultiArray, Int16
 class AirDropNavigation:
     def __init__(self):
         self.in_air_drop_navigation = Bool()
-        self.GPS_drop_1 = [-35.36366699, 149.16395691]
-        self.GPS_drop_2 = [-35.36328456, 149.16439751]
+        self.GPS_drop_1 = [51.7054267, -0.1298417]
+        self.GPS_drop_2 = [51.7053768, -0.1296915]
         self.GPS_drop_3 = []
         self.GPS_drop_4 = []
         self.GPS_drop_5 = []
@@ -74,10 +74,15 @@ if __name__ == "__main__":
 
         rate = rospy.Rate(10)
 
-        while (not rospy.is_shutdown()):
+        print(air_drop.drop_number_counter.data == len(air_drop.GPS_drop))
+
+        while (not rospy.is_shutdown()) and (air_drop.drop_number_counter.data != len(air_drop.GPS_drop)):
             rate.sleep()
 
-            if air_drop.drop_number_counter.data == len(air_drop.GPS_drop):
+            if (air_drop.drop_number_counter.data == len(air_drop.GPS_drop)):
+                rospy.loginfo(f"{air_drop.drop_number_counter} drops have been completed")
+                air_drop.in_air_drop_navigation_pub.publish(False)
+                rospy.loginfo("Air Drop Completed")
                 break
 
             if air_drop.in_air_drop_navigation:
@@ -92,8 +97,10 @@ if __name__ == "__main__":
             current_air_drop_waypoint = air_drop.publish_float64multiarray_data(air_drop.GPS_drop[air_drop.drop_number_counter.data])
             air_drop.air_drop_waypoint_pub.publish(current_air_drop_waypoint)
 
-        air_drop.in_air_drop_navigation_pub.publish(False)
-        rospy.loginfo("Air Drop Completed")
+
+        # print(f"{air_drop.drop_number_counter} drops have been completed")
+        # air_drop.in_air_drop_navigation_pub.publish(False)
+        # rospy.loginfo("Air Drop Completed")
 
 
     except rospy.ROSInterruptException:

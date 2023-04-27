@@ -2,6 +2,7 @@
 
 import rospy
 from std_msgs.msg import Bool, Int16
+import time
 
 
 class PayloadDropping:
@@ -43,6 +44,8 @@ if __name__ == "__main__":
             while counter < 1 and payload_dropping.execute_drop:
 
                 rate.sleep()
+
+                time.sleep(5)
                 
                 rospy.loginfo("Dropping bottle")
 
