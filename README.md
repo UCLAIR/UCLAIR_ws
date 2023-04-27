@@ -89,6 +89,9 @@ pip3 install pygeodesy
 ```
 cd ardupilot/ArduCopter/ && sim_vehicle.py -v ArduCopter --console --map
 
+# for gazebo only
+cd ~/ardupilot/ArduCopter/ && sim_vehicle.py -v ArduCopter -f gazebo-iris --console
+
 roslaunch mavros apm2.launch fcu_url:=udp://localhost:14550@
 
 roslaunch uav_navigation uav_payload_cuffley_test_execute.launch
