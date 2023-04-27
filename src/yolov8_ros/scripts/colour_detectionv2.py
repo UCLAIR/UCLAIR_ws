@@ -20,7 +20,7 @@ class ImageProcessingClassifier:
     }
 
     def __init__(self, image_path):
-        self.image = cv2.imread(image_path)
+        self.image = image_path
 
     def get_dominant_color(self, k=3):
 
