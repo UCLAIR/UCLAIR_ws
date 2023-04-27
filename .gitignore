@@ -58,3 +58,4 @@ src/.rosinstall.bak
 .vscode/
 .idea/
 *.pt
+src/yolov8_ros/database/*.csv
