@@ -112,6 +112,7 @@ class Yolov8:
         y_center = ((y1 + y2)/2)
         X = (alt_drone)*(x_center - self.cx)/self.fx
         Y = (alt_drone)*(y_center - self.cy)/self.fy
+        Y = -Y
         
         b = math.atan(abs(X/Y))
         s = math.sqrt(math.pow(X,2)+math.pow(Y,2))
