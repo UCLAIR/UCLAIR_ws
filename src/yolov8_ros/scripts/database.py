@@ -52,14 +52,15 @@ if __name__ == "__main__":
             (RESULTS.dataf['color_shape'] == row['color_shape']) &
             (RESULTS.dataf['color_char'] == row['color_char'])]
             # If there are no matches, continue to the next row
-            if RESULTS.matches_df.empty:
-                RESULTS.matching_rows=RESULTS.matching_rows.append({'Class': row['Class'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
-                continue
+            if not RESULTS.matches_df.empty:
+                #RESULTS.matching_rows=RESULTS.matching_rows.append({'Class': row['Class'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
+                RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
+                #continue
             # Otherwise, find the row with the minimum Distance value
             #min_dist_row = matches_df.loc[matches_df['Distance'].min()]
         
             # Add the matching row to the new dataframe
-            RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
+            #RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
 
         RESULTS.matching_rows.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/list.csv')
 
