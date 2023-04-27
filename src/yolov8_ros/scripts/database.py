@@ -4,6 +4,9 @@ from detection_msgs.msg import BoundingBox, BoundingBoxes
 import pandas as pd
 import math
 from getpass import getuser
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 class Dataf:
@@ -11,6 +14,7 @@ class Dataf:
 
         self.column_names=["Class","probability","long","lat","Distance","character","color_shape","color_char"]
         self.dataf=pd.DataFrame(columns=self.column_names)
+        self.rowdf=pd.DataFrame(columns=self.column_names)
         
         self.bottles_df = pd.read_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/BOTTLESDATA.txt', sep=',', header=None, names=['Class', 'character', 'color_shape', 'color_char'])
         self.matches_df=pd.DataFrame(columns=self.column_names)
@@ -25,15 +29,22 @@ class Dataf:
     def data_sub_cb(self, msg):
         for bb in msg.bounding_boxes:
             dist=math.sqrt(pow(bb.xDISTANCE,2)+pow(bb.yDISTANCE,2))
-            row_dict = {"Class":[bb.Class],"probability":[bb.probability],"long":[bb.long],"lat":[bb.lat],"Distance":[dist],"character":[bb.character],"color_shape":[bb.color_shape],"color_char":[bb.color_char]}
+            row_dict = {"Class":bb.Class,"probability":bb.probability,"long":bb.long,"lat":bb.lat,"Distance":dist,"character":bb.character,"color_shape":bb.color_shape,"color_char":bb.color_char}
             # Check if row with same combination of class, character, color_shape, and color_char exists in the dataframe
             if not any(value == "null" for value in [bb.character, bb.color_shape, bb.color_char]):
                 if self.dataf.empty:
-                    self.dataf = pd.DataFrame(row_dict)
+                    self.dataf = pd.DataFrame(row_dict, index=[0])
                 else:
                     existing_rows = self.dataf.loc[(self.dataf["Class"] == bb.Class) & (self.dataf["character"] == bb.character) & (self.dataf["color_shape"] == bb.color_shape) & (self.dataf["color_char"] == bb.color_char)]
-                    if existing_rows.empty or dist < existing_rows["Distance"].min():
+                    if existing_rows.empty:
                         self.dataf = self.dataf.append(row_dict, ignore_index=True)
+                    elif dist < existing_rows["Distance"].min():
+                        existing_rows_idx = existing_rows['Distance'].idxmin()
+                        self.dataf = self.dataf.drop(existing_rows_idx)
+                        self.dataf = self.dataf.append(row_dict, ignore_index=True)
+                        
+                        
+                        
             
 
 if __name__ == "__main__":
@@ -43,14 +54,17 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
 
         RESULTS.dataf.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/data.csv')
+        RESULTS.matching_rows = pd.DataFrame(columns=RESULTS.column_names)
 
         for i, row in RESULTS.bottles_df.iterrows():
+            #print(row)
             # Find the matching row(s) in dataf
-            RESULTS.matches_df = RESULTS.dataf.loc[
+            RESULTS.matches_df = RESULTS.dataf.loc[(
             (RESULTS.dataf['Class'] == row['Class']) &
             (RESULTS.dataf['character'] == row['character']) &
             (RESULTS.dataf['color_shape'] == row['color_shape']) &
-            (RESULTS.dataf['color_char'] == row['color_char'])]
+            (RESULTS.dataf['color_char'] == row['color_char']))]
+
             # If there are no matches, continue to the next row
             if not RESULTS.matches_df.empty:
                 #RESULTS.matching_rows=RESULTS.matching_rows.append({'Class': row['Class'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
