@@ -46,8 +46,10 @@ class Yolov8:
         self.sub = rospy.Subscriber(self.source,Image, self.get_image)
         self.pred_pub = rospy.Publisher('BoundingBoxes', BoundingBoxes, queue_size = 10)
         
-        self.fx = 240
-        self.fy = 240
+        #https://shop.siyi.biz/products/zr10?VariantsId=10623
+        #Focal Length: 5.15±5% to 47.38±5% mm
+        self.fx = 515
+        self.fy = 515
         self.cx = 320
         self.cy = 320
 
