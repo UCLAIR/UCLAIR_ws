@@ -11,9 +11,9 @@ class ImageProcessingClassifier:
         "grey": (169, 169, 169),
         "red": (255, 0, 0),
         "blue": (0, 0, 255),
-        "green": (78, 173, 91),
+        "green": (0, 170, 20),
         "yellow": (255, 255, 0),
-        "purple": (160, 32, 240),
+        "purple": (128, 0, 128),
         "brown": (92, 64, 51),
         "orange": (255, 165, 0),
         "pink": (255, 145, 175)
