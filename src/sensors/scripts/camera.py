@@ -14,16 +14,12 @@ def talker():
 	rtsp_stream_link = "rtsp://192.168.144.25:8554/main.264"
 	video_stream_widget = RTSPVideoWriterObject(rtsp_stream_link)
 
-
-
-	print(cap.isOpened())
-	bridge = CvBridge()
 	
 	pub = rospy.Publisher('/camera_raw',Image,queue_size = 1)
 	rospy.init_node('webcam',anonymous = False)
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown():
-		ret,frame = cap.read()
+		ret,frame = video_stream_widget.status, video_stream_widget.frame
 		if not ret:
 			break
 		msg = bridge.cv2_to_imgmsg(frame,"bgr8")
