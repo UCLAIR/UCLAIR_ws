@@ -22,6 +22,7 @@ class Yolov8:
         self.source = rospy.get_param("~source")
         self.weights = rospy.get_param("~weights")
         self.model = YOLO(f'/home/{getuser()}/UCLAIR_ws/best.pt')
+        self.model = YOLO('yolov8n.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
         self.longitude = Float64()
         self.latitude = Float64()
@@ -99,7 +100,7 @@ class Yolov8:
         if self.source == '/static_image':
             show_results = True
         else:
-            show_results = False
+            show_results = True
         
         self.results = self.model.predict(
             source = video_source,
