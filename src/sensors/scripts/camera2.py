@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from threading import Thread
 import cv2
 
@@ -30,8 +28,8 @@ class RTSPVideoWriterObject(object):
 
     def show_frame(self):
         # Display frames in main program
-        # if self.status:
-        #     cv2.imshow('frame', self.frame)
+        if self.status:
+            cv2.imshow('frame', self.frame)
 
         # Press Q on keyboard to stop recording
         key = cv2.waitKey(1)
@@ -47,12 +45,11 @@ class RTSPVideoWriterObject(object):
 
 
 if __name__ == '__main__':
-    rtsp_stream_link = "rtsp://192.168.144.25:8554/main.264'"
+    rtsp_stream_link = "rtsp://192.168.144.25:8554/main.264"
     video_stream_widget = RTSPVideoWriterObject(rtsp_stream_link)
     while True:
         try:
             video_stream_widget.show_frame()
-            video_stream_widget.save_frame()
+            #video_stream_widget.save_frame()
         except AttributeError:
             pass
-

@@ -4,13 +4,18 @@ import rospy
 from sensor_msgs.msg import Image
 import cv2
 from cv_bridge import CvBridge,CvBridgeError
+from camera2 import RTSPVideoWriterObject
 
 
 
 
 def talker():
 
-	cap = cv2.VideoCapture('rtsp://192.168.144.25:8554/main.264')
+	rtsp_stream_link = "rtsp://192.168.144.25:8554/main.264"
+	video_stream_widget = RTSPVideoWriterObject(rtsp_stream_link)
+
+
+
 	print(cap.isOpened())
 	bridge = CvBridge()
 	
@@ -32,6 +37,7 @@ def talker():
 
 
 if __name__ == '__main__':
+	
 	try:
 		talker()
 	except rospy.ROSInterruptException:
