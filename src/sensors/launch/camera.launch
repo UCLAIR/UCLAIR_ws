@@ -1,6 +1,6 @@
 <launch>
 
-<node name="webcam" pkg="sensors" type="camera2.py" output="screen" respawn="true"/>
+<node name="webcam" pkg="sensors" type="camera.py" output="screen" respawn="true"/>
 
 </launch>
 
