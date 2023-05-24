@@ -4,24 +4,15 @@ import rospy
 from navigation_functions import *
 from std_msgs.msg import Float64MultiArray, Bool
 from sensor_msgs.msg import NavSatFix
+from mavros_msgs.msg import WaypointList
 
 
 class GlobalNavigation:
 
-    # Global Waypoints from competitions (the last waypoint is repeated)
-    waypoints = [
-        [51.7054749, -0.1300563], [51.7056452, -0.1300348],
-        [51.7056145, -0.1294903], [51.7056145, -0.1294903]
-    ]
-
-    # waypoints = [
-    #     [-35.3624856, 149.16446636], [-35.3624856, 149.16446636]
-    # ]
-
-
     def __init__(self):
         self.current_waypoint_counter = 0
         self.current_global_location = NavSatFix()
+        self.waypoints = []
 
 
         # ROS Publishers
@@ -50,12 +41,29 @@ class GlobalNavigation:
             callback=self.current_global_location_sub_cb
         )
 
+        # Subscribing waypoint list from GCS
+        self.waypoints_sub = rospy.Subscriber(
+            name="mavros/mission/waypoints",
+            data_class=WaypointList,
+            callback=self.waypoints_sub_cb
+        )
+
 
     # Call back functions
 
     def current_global_location_sub_cb(self, msg):
         self.current_global_location = msg
 
+    def waypoints_sub_cb(self, msg):
+        waypoint_list = []
+
+        for waypoint in msg.waypoints:
+            if (waypoint.frame == 3) and (waypoint.command == 16) and (waypoint.x_lat != 0) and (waypoint.y_long != 0) \
+                and (self.get_distance(waypoint.x_lat, waypoint.y_long, self.current_global_location.latitude, self.current_global_location.longitude) > 1):
+                waypoint_list.append([waypoint.x_lat, waypoint.y_long])
+
+        self.waypoints = waypoint_list
+        # rospy.loginfo(self.waypoints)
 
     # Getting distance between current location to destination 
     def get_distance(self, lat1, lon1, lat2, lon2):
@@ -93,6 +101,11 @@ if __name__ == "__main__":
 
         # Initialise the GlobalNavigation class
         global_path = GlobalNavigation()
+
+        while True:
+            rospy.loginfo("Waiting for waypoints from GCS")
+            if len(global_path.waypoints) != 0:
+                break
 
         # Keeps global navigation running until it reaches the last waypoint
         while (not rospy.is_shutdown()) and (global_path.current_waypoint_counter < len(global_path.waypoints)):
