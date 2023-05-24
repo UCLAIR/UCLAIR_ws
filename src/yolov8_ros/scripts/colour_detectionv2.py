@@ -30,7 +30,7 @@ class ImageProcessingClassifier:
 
         gray = cv2.cvtColor(blurred, cv2.COLOR_RGB2GRAY)
 
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 43, 1)
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 13, 1)
 
         cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_KCOS)
         cnts = cnts[0] if len(cnts) == 2 else cnts[1]

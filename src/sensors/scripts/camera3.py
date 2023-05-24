@@ -9,6 +9,7 @@ from camera2 import RTSPVideoWriterObject
 def talker():
     rtsp_stream_link = "rtsp://192.168.144.25:8554/main.264"
     video_stream_widget = RTSPVideoWriterObject(rtsp_stream_link)
+    bridge = CvBridge()
 
     colours = {
         'blue': ((90, 50, 70), (128, 255, 255)),
