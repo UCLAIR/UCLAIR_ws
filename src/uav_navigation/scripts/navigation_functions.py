@@ -29,7 +29,7 @@ class Navigation:
         self.current_local_local_position = PoseStamped()
         
 
-
+        
         # ROS Publishers
 
         # Publishing the global position

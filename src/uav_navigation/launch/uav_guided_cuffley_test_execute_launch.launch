@@ -1,4 +1,4 @@
 <launch>
     <node name="global_navigation_node" pkg="uav_navigation" type="global_navigation_node.py" output="screen" />
-    <node name="uav_guided_cuffley_test_execute_node" pkg="uav_navigation" type="uav_payload_cuffley_test_execute_node.py" output="screen"/>
+    <node name="uav_guided_cuffley_test_execute_node" pkg="uav_navigation" type="uav_guided_cuffley_test_execute_node.py" output="screen"/>
 </launch>

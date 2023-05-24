@@ -5,7 +5,8 @@ from navigation_functions import *
 from std_msgs.msg import Float64MultiArray, Bool
 from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import WaypointList
-
+from mavros_msgs.srv import WaypointPull, WaypointPullRequest, WaypointClear
+import time
 
 class GlobalNavigation:
 
@@ -48,6 +49,21 @@ class GlobalNavigation:
             callback=self.waypoints_sub_cb
         )
 
+        # ROS Services
+
+        # Pull Waypoints 
+        rospy.wait_for_service("mavros/mission/pull")
+        self.pull_waypoint_client = rospy.ServiceProxy(
+            name="mavros/mission/pull",
+            service_class=WaypointPull
+        )
+
+        # Clear Waypoints
+        rospy.wait_for_service("mavros/mission/clear")
+        self.clear_waypoint_client = rospy.ServiceProxy(
+            name="mavros/mission/clear",
+            service_class=WaypointClear
+        )
 
     # Call back functions
 
@@ -55,6 +71,7 @@ class GlobalNavigation:
         self.current_global_location = msg
 
     def waypoints_sub_cb(self, msg):
+
         waypoint_list = []
 
         for waypoint in msg.waypoints:
@@ -63,7 +80,31 @@ class GlobalNavigation:
                 waypoint_list.append([waypoint.x_lat, waypoint.y_long])
 
         self.waypoints = waypoint_list
-        # rospy.loginfo(self.waypoints)
+
+    def pull_waypoints(self):
+        try:
+            response = self.pull_waypoint_client()
+            # if response.success:
+            #     rospy.loginfo("Waypoints retrieved successfully!")
+            #     # Access the updated waypoint list from response.waypoints
+            #     rospy.loginfo(response)
+            # else:
+            #     rospy.logwarn("Failed to retrieve waypoints.")
+        except rospy.ServiceException as e:
+            rospy.logerr("Service call failed: %s" % e)
+
+    def clear_waypoints(self):
+        try:
+            response = self.clear_waypoint_client()
+            # if response.success:
+            #     rospy.loginfo("Waypoints cleared successfully!")
+            #     # Access the updated waypoint list from response.waypoints
+            #     rospy.loginfo(response)
+            # else:
+            #     rospy.logwarn("Failed to clear waypoints.")
+        except rospy.ServiceException as e:
+            rospy.logerr("Service call failed: %s" % e)
+
 
     # Getting distance between current location to destination 
     def get_distance(self, lat1, lon1, lat2, lon2):
@@ -102,10 +143,19 @@ if __name__ == "__main__":
         # Initialise the GlobalNavigation class
         global_path = GlobalNavigation()
 
-        while True:
-            rospy.loginfo("Waiting for waypoints from GCS")
+        global_path.clear_waypoints()
+
+        while not rospy.is_shutdown():
+            time.sleep(5)
+
+            global_path.pull_waypoints()
+
             if len(global_path.waypoints) != 0:
+                rospy.loginfo(f"{len(global_path.waypoints)} Global Waypoints Recevied: {global_path.waypoints}")
                 break
+            else:
+                rospy.loginfo("Waiting for Global Waypoints")
+        
 
         # Keeps global navigation running until it reaches the last waypoint
         while (not rospy.is_shutdown()) and (global_path.current_waypoint_counter < len(global_path.waypoints)):
