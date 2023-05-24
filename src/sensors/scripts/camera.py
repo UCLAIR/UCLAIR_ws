@@ -21,8 +21,9 @@ def talker():
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown():
 		rate.sleep()
-		video_stream_widget.show_frame()
+		#video_stream_widget.show_frame()
 		ret,frame = video_stream_widget.status, video_stream_widget.frame
+		frame = frame[0:720, 280:1000]
 		if not ret:
 			break
 		msg = bridge.cv2_to_imgmsg(frame,"bgr8")
