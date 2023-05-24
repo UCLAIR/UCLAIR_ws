@@ -11,7 +11,7 @@ class OCRDetectionClassifier:
     @staticmethod
     def image_processing(image):
 
-        img = cv2.medianBlur(image, 5)
+        img = cv2.medianBlur(image, 3)
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -56,9 +56,9 @@ class OCRDetectionClassifier:
 
         config = '-c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 --psm 10'
 
-        for i in range(0, 24):
+        for i in range(0, 6):
 
-            rotated = imutils.rotate(cropped, i * 15)
+            rotated = imutils.rotate(cropped, i * 60)
 
             data = pytesseract.image_to_data(rotated, lang='eng', config=config)
 
