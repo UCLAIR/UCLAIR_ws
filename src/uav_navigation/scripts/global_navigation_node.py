@@ -7,13 +7,15 @@ from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import WaypointList
 from mavros_msgs.srv import WaypointPull, WaypointPullRequest, WaypointClear
 import time
+from ..bottle_classification import bottle_classification as bc
 
 class GlobalNavigation:
-
+    
     def __init__(self):
         self.current_waypoint_counter = 0
         self.current_global_location = NavSatFix()
         self.waypoints = []
+        self.bottles = []
 
 
         # ROS Publishers
@@ -72,14 +74,27 @@ class GlobalNavigation:
 
     def waypoints_sub_cb(self, msg):
 
+
+        # Waypoints
         waypoint_list = []
 
+        # Bottles data
+        bottles_list = []
+
         for waypoint in msg.waypoints:
+
             if (waypoint.frame == 3) and (waypoint.command == 16) and (waypoint.x_lat != 0) and (waypoint.y_long != 0) \
                 and (self.get_distance(waypoint.x_lat, waypoint.y_long, self.current_global_location.latitude, self.current_global_location.longitude) > 1):
                 waypoint_list.append([waypoint.x_lat, waypoint.y_long])
 
+            if (waypoint.command == 217):
+                bottles_list.append([waypoint.param1, waypoint.param2, waypoint.param3, waypoint.param4])
+
         self.waypoints = waypoint_list
+
+        self.bottles = bottles_list
+        rospy.loginfo(self.bottles)
+
 
     def pull_waypoints(self):
         try:
@@ -150,53 +165,54 @@ if __name__ == "__main__":
 
             global_path.pull_waypoints()
 
-            if len(global_path.waypoints) != 0:
+            if len(global_path.waypoints) != 0 and len(global_path.bottles) != 0:
                 rospy.loginfo(f"{len(global_path.waypoints)} Global Waypoints Recevied: {global_path.waypoints}")
+                rospy.loginfo(f"{len(global_path.bottles)} Bottles Recevied: {global_path.bottles}")
                 break
             else:
                 rospy.loginfo("Waiting for Global Waypoints")
         
 
-        # Keeps global navigation running until it reaches the last waypoint
-        while (not rospy.is_shutdown()) and (global_path.current_waypoint_counter < len(global_path.waypoints)):
+        # # Keeps global navigation running until it reaches the last waypoint
+        # while (not rospy.is_shutdown()) and (global_path.current_waypoint_counter < len(global_path.waypoints)):
 
-            # Publishing to the uav_execute_node that the UAV is in global navigation mode
-            global_path.global_navigation_pub.publish(True)
+        #     # Publishing to the uav_execute_node that the UAV is in global navigation mode
+        #     global_path.global_navigation_pub.publish(True)
 
-            # Publishing current waypoint target to uav_execute_node
-            current_waypoint = global_path.publish_float64multiarray_data(global_path.waypoints[global_path.current_waypoint_counter])
-            global_path.global_waypoint_pub.publish(current_waypoint)
+        #     # Publishing current waypoint target to uav_execute_node
+        #     current_waypoint = global_path.publish_float64multiarray_data(global_path.waypoints[global_path.current_waypoint_counter])
+        #     global_path.global_waypoint_pub.publish(current_waypoint)
 
-            # Ensure we are receiving current global location from uav_execute_node
-            if (global_path.current_global_location.latitude == None) and (global_path.current_global_location.longitude == None):
-                rospy.loginfo("No GPS Coordinates from FCU")
-                rate.sleep()
+        #     # Ensure we are receiving current global location from uav_execute_node
+        #     if (global_path.current_global_location.latitude == None) and (global_path.current_global_location.longitude == None):
+        #         rospy.loginfo("No GPS Coordinates from FCU")
+        #         rate.sleep()
 
-            else:
+        #     else:
                 
-                # Calculating distance
-                distance = global_path.get_distance(
-                    lat1=global_path.current_global_location.latitude,
-                    lon1=global_path.current_global_location.longitude,
-                    lat2=global_path.waypoints[global_path.current_waypoint_counter][0],
-                    lon2=global_path.waypoints[global_path.current_waypoint_counter][1]
-                )
+        #         # Calculating distance
+        #         distance = global_path.get_distance(
+        #             lat1=global_path.current_global_location.latitude,
+        #             lon1=global_path.current_global_location.longitude,
+        #             lat2=global_path.waypoints[global_path.current_waypoint_counter][0],
+        #             lon2=global_path.waypoints[global_path.current_waypoint_counter][1]
+        #         )
 
-                rospy.loginfo(
-                    "Distance left to Waypoint {}: {}m".format(str(global_path.current_waypoint_counter+1), distance)
-                    )
+        #         rospy.loginfo(
+        #             "Distance left to Waypoint {}: {}m".format(str(global_path.current_waypoint_counter+1), distance)
+        #             )
                 
-                rate.sleep()
+        #         rate.sleep()
 
-                # Determining the next waypoint
-                if distance < 0.5:
-                    global_path.current_waypoint_counter += 1
+        #         # Determining the next waypoint
+        #         if distance < 0.5:
+        #             global_path.current_waypoint_counter += 1
 
 
-        # Publishing to the uav_execute_node that the UAV is not in global navigation mode
-        global_path.global_navigation_pub.publish(False)
+        # # Publishing to the uav_execute_node that the UAV is not in global navigation mode
+        # global_path.global_navigation_pub.publish(False)
 
-        rospy.loginfo("Stopping Global Waypoint Navigation")
+        # rospy.loginfo("Stopping Global Waypoint Navigation")
 
 
     except KeyboardInterrupt:
