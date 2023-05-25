@@ -91,7 +91,10 @@ class GlobalNavigation:
                 waypoint_list.append([waypoint.x_lat, waypoint.y_long])
 
             if (waypoint.command == 217):
-                bottles_list.append([Colors(int(waypoint.param1)).name, Colors(int(waypoint.param2)).name, Shape(int(waypoint.param3)).name, Alphanumeric(int(waypoint.param4)).name])
+                if int(waypoint.param4) < 10:
+                    bottles_list.append([Colors(int(waypoint.param1)).name, Colors(int(waypoint.param2)).name, Shape(int(waypoint.param3)).name, str(int(waypoint.param4))])
+                else: 
+                    bottles_list.append([Colors(int(waypoint.param1)).name, Colors(int(waypoint.param2)).name, Shape(int(waypoint.param3)).name, Alphanumeric(int(waypoint.param4)).name])
 
         self.waypoints = waypoint_list
 
