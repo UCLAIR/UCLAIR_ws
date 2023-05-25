@@ -15,9 +15,9 @@ class OCRDetectionClassifier:
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        _, mask = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY)
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 51, 3)
 
-        return mask
+        return thresh
 
     @staticmethod
     def center_crop(image, dim):
