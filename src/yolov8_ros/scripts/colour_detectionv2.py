@@ -6,17 +6,17 @@ import cv2
 
 class ImageProcessingClassifier:
     COLORS = {
-        "white": (255, 255, 255),
-        "black": (0, 0, 0),
-        "grey": (169, 169, 169),
-        "red": (255, 0, 0),
-        "blue": (0, 0, 255),
-        "green": (0, 170, 20),
-        "yellow": (255, 255, 0),
-        "purple": (128, 0, 128),
-        "brown": (92, 64, 51),
-        "orange": (255, 165, 0),
-        "pink": (255, 145, 175)
+        "WHITE": (255, 255, 255),
+        "BLACK": (0, 0, 0),
+        "GRAY": (169, 169, 169),
+        "RED": (255, 0, 0),
+        "BLUE": (0, 0, 255),
+        "GREEN": (0, 170, 20),
+        "YELLOW": (255, 255, 0),
+        "PURPLE": (128, 0, 128),
+        "BROWN": (92, 64, 51),
+        "ORANGE": (255, 165, 0),
+        "PINK": (255, 145, 175)
     }
 
     def __init__(self, image_path):
