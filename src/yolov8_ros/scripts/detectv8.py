@@ -21,8 +21,7 @@ class Yolov8:
     def __init__(self):
         self.source = rospy.get_param("~source")
         self.weights = rospy.get_param("~weights")
-        #self.model = YOLO(f'/home/{getuser()}/UCLAIR_ws/best.pt')
-        self.model = YOLO('yolov8n.pt')
+        self.model = YOLO(f'/home/{getuser()}/UCLAIR_ws/best.pt')
         self.current_global_position = NavSatFix() # Latitude, Longitude, WGS-84
         self.longitude = Float64()
         self.latitude = Float64()
@@ -84,9 +83,13 @@ class Yolov8:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
                 
                 [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
-                #bb.character = alphanumeric_detection2(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 
-                #bb.probability = float(r.boxes.conf[x])
+                try:
+                    bb.character = alphanumeric_detection2(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+                except:
+                    pass
+                
+                bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
                 bb.Class = self.model.names[int(cls)]
                 x = x + 1
