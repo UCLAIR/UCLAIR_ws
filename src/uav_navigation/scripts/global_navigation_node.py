@@ -7,7 +7,10 @@ from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import WaypointList
 from mavros_msgs.srv import WaypointPull, WaypointPullRequest, WaypointClear
 import time
-from ..bottle_classification import bottle_classification as bc
+from bottle_classification import Colors, Shape, Alphanumeric
+import pandas as pd
+from getpass import getuser
+
 
 class GlobalNavigation:
     
@@ -88,12 +91,11 @@ class GlobalNavigation:
                 waypoint_list.append([waypoint.x_lat, waypoint.y_long])
 
             if (waypoint.command == 217):
-                bottles_list.append([waypoint.param1, waypoint.param2, waypoint.param3, waypoint.param4])
+                bottles_list.append([Colors(int(waypoint.param1)).name, Colors(int(waypoint.param2)).name, Shape(int(waypoint.param3)).name, Alphanumeric(int(waypoint.param4)).name])
 
         self.waypoints = waypoint_list
 
         self.bottles = bottles_list
-        rospy.loginfo(self.bottles)
 
 
     def pull_waypoints(self):
@@ -168,6 +170,8 @@ if __name__ == "__main__":
             if len(global_path.waypoints) != 0 and len(global_path.bottles) != 0:
                 rospy.loginfo(f"{len(global_path.waypoints)} Global Waypoints Recevied: {global_path.waypoints}")
                 rospy.loginfo(f"{len(global_path.bottles)} Bottles Recevied: {global_path.bottles}")
+                df = pd.DataFrame(global_path.bottles)
+                df.to_csv(f"/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/BOTTLESDATA.txt", index=False, header=False)
                 break
             else:
                 rospy.loginfo("Waiting for Global Waypoints")
