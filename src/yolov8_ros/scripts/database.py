@@ -70,19 +70,19 @@ class Dataf:
 
 
         if i == 0:
-            self.GPS_drop_1_pub(pub_GPS)
+            self.GPS_drop_1_pub.publish(pub_GPS)
 
         elif i == 1:
-            self.GPS_drop_2_pub(pub_GPS)
+            self.GPS_drop_2_pub.publish(pub_GPS)
 
         elif i == 2:
-            self.GPS_drop_3_pub(pub_GPS)
+            self.GPS_drop_3_pub.publish(pub_GPS)
 
         elif i == 3:
-            self.GPS_drop_4_pub(pub_GPS)
+            self.GPS_drop_4_pub.publish(pub_GPS)
         
         elif i == 4:
-            self.GPS_drop_5_pub(pub_GPS)
+            self.GPS_drop_5_pub.publish(pub_GPS)
 
     def data_sub_cb(self, msg):
         for bb in msg.bounding_boxes:
