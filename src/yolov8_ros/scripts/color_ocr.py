@@ -56,9 +56,4 @@ if __name__ == "__main__":
     rospy.init_node('OCR_Colour')
     
     RESULTS = OCR_COLOUR()
-    
-    while not rospy.is_shutdown():
-        try:
-            RESULTS.publish()
-        except:
-            pass
+    rospy.spin()
