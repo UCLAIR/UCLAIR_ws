@@ -71,7 +71,7 @@ class ImageProcessingClassifier:
 
         colour_map = {}
         for i in range(k):
-            if colour_names[i] != 'pink':
+            if colour_names[i] != 'PINK':
                 colour_map[colour_names[i]] = pixel_counts[i]
 
         sorted_colours = sorted(colour_map.items(), key=lambda x: x[1], reverse=True)
