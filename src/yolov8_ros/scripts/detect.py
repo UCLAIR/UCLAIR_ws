@@ -5,7 +5,7 @@ import cv2
 from cv_bridge import CvBridge
 from ultralytics import YOLO
 from sensor_msgs.msg import Image, CompressedImage, NavSatFix
-from detection_msgs.msg import BoundingBox, BoundingBoxes
+from detection_msgs.msg import BoundingBox, BoundingBoxes, DetectionBB
 from geographic_msgs.msg import GeoPoseStamped, GeoPoint
 import math
 from pygeodesy.geoids import GeoidPGM
@@ -27,8 +27,6 @@ class Yolov8:
         self.longitude = Float64()
         self.latitude = Float64()
         self.altitude = Float32()
-        self.frame_counter = 1
-        self.list = [('ID,Class,xmin,ymin,xmax,ymax,long,lat,xDISTANCE,yDISTANCE')]
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
         
@@ -47,7 +45,7 @@ class Yolov8:
         
         
         self.sub = rospy.Subscriber(self.source,Image, self.get_image)
-        self.pred_pub = rospy.Publisher('BoundingBoxes', BoundingBoxes, queue_size = 10)
+        self.pred_pub = rospy.Publisher('YOLO_results', DetectionBB, queue_size = 100)
         
         #https://shop.siyi.biz/products/zr10?VariantsId=10623
         #Focal Length: 5.15±5% to 47.38±5% mm
@@ -68,14 +66,11 @@ class Yolov8:
         self.image = bridge.imgmsg_to_cv2(data, desired_encoding="bgr8")
         self.yolo(self.image)
         
-        BB = BoundingBoxes()
-        BB.header = data.header
         
-        check = False
         for r in self.results:
             x = 0
             for xyxy in r.boxes.xyxy :
-                bb = BoundingBox()
+                bb = DetectionBB()
                 bb.xmin = int(xyxy[0])
                 bb.ymin = int(xyxy[1])
                 bb.xmax = int(xyxy[2])
@@ -87,26 +82,15 @@ class Yolov8:
                     [bb.long, bb.lat, bb.xDISTANCE, bb.yDISTANCE] = self.localisation(bb.xmin,bb.ymin,bb.xmax,bb.ymax,5,5,5)
                     
                 
-            
+                bb.image = data
                 bb.probability = float(r.boxes.conf[x])
                 cls = r.boxes.cls[x]
                 bb.Class = self.model.names[int(cls)]
                 x = x + 1
+                self.pred_pub.publish(bb)
                 
-                string = (f'{self.frame_counter},{bb.Class},{bb.xmin},{bb.ymin},{bb.xmax},{bb.ymax},{bb.long},{bb.lat},{bb.xDISTANCE},{bb.yDISTANCE}')
-                self.list.append(string)
-                
-                cv2.imwrite(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/images/{self.frame_counter}.png', self.image)
-                
-                text = open(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/yolo_database.csv', "w")
-                for i in self.list:
-                    text.write(i + '\n')
-                text.close()
-                
-                check = True
-                
-        if check:            
-            self.frame_counter = self.frame_counter + 1
+                            
+            
                 
 
                 
