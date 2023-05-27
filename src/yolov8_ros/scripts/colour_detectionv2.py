@@ -83,7 +83,7 @@ class ImageProcessingClassifier:
         if len(dominant_colours) > 1:
             return dominant_colours[0], dominant_colours[1]
         else:
-            return 'null', 'null'
+            return dominant_colours[0], 'null'
 
     @staticmethod
     def compute_distance(rgb1, rgb2):
