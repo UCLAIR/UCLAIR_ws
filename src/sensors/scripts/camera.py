@@ -23,17 +23,22 @@ def talker():
 		rate.sleep()
 		#video_stream_widget.show_frame()
 		ret,frame = video_stream_widget.status, video_stream_widget.frame
-		frame = frame[0:720, 280:1000]
-		if not ret:
-			break
-		msg = bridge.cv2_to_imgmsg(frame,"bgr8")
-		pub.publish(msg)
-		
-		if cv2.waitKey(1) == ord('q'):
-			break
-		
-		if rospy.is_shutdown():
-			frame.release()
+		try:
+
+			frame = frame[0:720, 280:1000]
+			if not ret:
+				break
+			msg = bridge.cv2_to_imgmsg(frame,"bgr8")
+			pub.publish(msg)
+			
+			if cv2.waitKey(1) == ord('q'):
+				break
+			
+			if rospy.is_shutdown():
+				frame.release()
+
+		except:
+			rate.sleep()
 
 
 if __name__ == '__main__':

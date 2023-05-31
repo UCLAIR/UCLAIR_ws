@@ -59,4 +59,4 @@ src/.rosinstall.bak
 .idea/
 *.pt
 src/yolov8_ros/database/*.csv
-src/yolov8_ros/database/images/*.png
+src/yolov8_ros/database/*.png
