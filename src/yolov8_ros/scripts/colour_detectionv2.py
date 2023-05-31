@@ -10,7 +10,7 @@ class ImageProcessingClassifier:
         "BLACK": (0, 0, 0),
         "GRAY": (169, 169, 169),
         "RED": (255, 0, 0),
-        "BLUE": (0, 0, 255),
+        "BLUE": (50, 140, 255),
         "GREEN": (55, 170, 70),
         "YELLOW": (255, 255, 0),
         "PURPLE": (128, 0, 128),
@@ -23,7 +23,7 @@ class ImageProcessingClassifier:
         self.image = image_path
         self.image = cv2.resize(self.image, (0, 0), fx=0.25, fy=0.25)
 
-    def get_dominant_color(self, k=3):
+    def get_dominant_color(self, k=4):
 
         image_new = self.adjust_contrast(self.image, alpha=3, beta=1.5)
 
