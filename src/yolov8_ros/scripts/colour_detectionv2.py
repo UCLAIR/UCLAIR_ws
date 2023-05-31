@@ -29,7 +29,7 @@ class ImageProcessingClassifier:
 
         blurred = cv2.GaussianBlur(image_new, (3, 3), 0)
 
-        gray = cv2.cvtColor(blurred, cv2.COLOR_RGB2GRAY)
+        gray = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
 
         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21, 1)
 
@@ -42,9 +42,11 @@ class ImageProcessingClassifier:
         cv2.drawContours(mask, [max_contour], -1, 255, cv2.FILLED)
 
         new_image = np.zeros_like(self.image)
-        new_image[:] = (255, 145, 175)
+        new_image[:] = (175, 145, 255)
 
         new_image[mask != 0] = self.image[mask != 0]
+
+        new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
 
         image_array = np.array(new_image)
 
