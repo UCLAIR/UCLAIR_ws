@@ -60,3 +60,4 @@ src/.rosinstall.bak
 *.pt
 src/yolov8_ros/database/*.csv
 src/yolov8_ros/database/*.png
+src/yolov8_ros/tesseract
