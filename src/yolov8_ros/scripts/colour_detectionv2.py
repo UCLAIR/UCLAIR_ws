@@ -23,7 +23,7 @@ class ImageProcessingClassifier:
         self.image = image_path
         self.image = cv2.resize(self.image, (0, 0), fx=0.25, fy=0.25)
 
-    def get_dominant_color(self, k=3):
+    def get_dominant_color(self, k=4):
 
         image_new = self.adjust_contrast(self.image, alpha=3, beta=1.5)
 
