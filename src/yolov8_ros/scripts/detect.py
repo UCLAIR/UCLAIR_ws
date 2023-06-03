@@ -16,6 +16,7 @@ from alphanumeric_detectionv2 import alphanumeric_detection2
 from colour_detectionv2 import color_detection
 from getpass import getuser
 import glob, os
+import numpy as np
 
 
 class Yolov8:
@@ -27,6 +28,7 @@ class Yolov8:
         self.longitude = Float64()
         self.latitude = Float64()
         self.altitude = Float32()
+        self.current_compass = Float64()
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
         
@@ -43,9 +45,14 @@ class Yolov8:
             callback=self.current_terrain_report_sub_cb
         )
         
+        self.current_compass = rospy.Subscriber(
+            name="mavros/global_position/compass_hdg",
+            data_class=Float64,
+            callback=self.current_compass_heading_cb
+        )
         
         self.sub = rospy.Subscriber(self.source,Image, self.get_image)
-        self.pred_pub = rospy.Publisher('YOLO_results', DetectionBB, queue_size = 100)
+        self.pred_pub = rospy.Publisher('YOLO_results', DetectionBB, queue_size = 10)
         
         #https://shop.siyi.biz/products/zr10?VariantsId=10623
         #Focal Length: 5.15±5% to 47.38±5% mm
@@ -60,6 +67,9 @@ class Yolov8:
 
     def current_terrain_report_sub_cb(self, msg):
         self.altitude = msg.current_height
+        
+    def current_compass_heading_cb(self, msg):
+        self.current_compass = msg
 
     def get_image(self, data):
         bridge = CvBridge()
@@ -115,6 +125,24 @@ class Yolov8:
         X = (alt_drone)*(x_center - self.cx)/self.fx
         Y = (alt_drone)*(y_center - self.cy)/self.fy
         Y = -Y
+        
+        bear = self.current_compass
+        XY = np.array([[X],[Y]])
+        try:
+            bear = -bear*(180/math.pi)
+            trans = np.array([[math.cos(bear), -math.sin(bear)], [math.sin(bear), math.cos(bear)]])
+            new = np.matmul(trans, XY)
+        except:
+            bear = 0
+            trans = np.array([[math.cos(bear), -math.sin(bear)], [math.sin(bear), math.cos(bear)]])
+            new = np.matmul(trans, XY)
+            
+        X = float(new[0])
+        Y = float(new[1])
+        
+            
+        
+        
         
         b = math.atan(abs(X/Y))
         s = math.sqrt(math.pow(X,2)+math.pow(Y,2))

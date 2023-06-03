@@ -41,8 +41,8 @@ class OCR_COLOUR:
         bb.xDISTANCE = YOLO.xDISTANCE
         bb.yDISTANCE = YOLO.yDISTANCE
 
-        #cv2.imwrite(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/{self.picture_number}.png', self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
-        #self.picture_number = self.picture_number + 1
+        cv2.imwrite(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/{self.picture_number}.png', self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
+        self.picture_number = self.picture_number + 1
         
         [bb.color_shape, bb.color_char] = color_detection(self.image[bb.ymin:bb.ymax,bb.xmin:bb.xmax])
                 

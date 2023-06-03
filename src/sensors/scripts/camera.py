@@ -22,6 +22,7 @@ def talker():
 	while not rospy.is_shutdown():
 		rate.sleep()
 		#video_stream_widget.show_frame()
+		video_stream_widget.save_frame()
 		ret,frame = video_stream_widget.status, video_stream_widget.frame
 		try:
 
