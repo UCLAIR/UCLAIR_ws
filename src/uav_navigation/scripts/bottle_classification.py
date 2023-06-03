@@ -16,19 +16,19 @@ class Colors(Enum):
 
 class Shape(Enum):
     """Enum for the different shapes of the bottles"""
-    CIRCLE = 1
-    SEMICIRCLE = 2
-    QUARTER_CIRCLE = 3
-    TRIANGLE = 4
-    SQUARE = 5
-    RECTANGLE = 6
-    TRAPEZOID = 7
-    PENTAGON = 8
-    HEXAGON = 9
-    HEPTAGON = 10
-    OCTAGON = 11
-    STAR = 12
-    CROSS = 13
+    circle = 1
+    semicircle = 2
+    quarter_circle = 3
+    triangle = 4
+    square = 5
+    rectangle = 6
+    trapezoid = 7
+    penatgon = 8
+    hexagon = 9
+    heptagon = 10
+    octagon = 11
+    star = 12
+    cross = 13
 
 class Alphanumeric(Enum):
     """Enum for the different alphanumeric characters of the bottles"""

@@ -132,8 +132,8 @@ if __name__ == "__main__":
                 if RESULTS.matches_df.empty:
                     RESULTS.publish_data(i, 0, 0)
                 else:
-                    lon = float(RESULTS.matches_df["long"][0])
-                    lat = float(RESULTS.matches_df["lat"][0])
+                    lon = float(RESULTS.matches_df["long"].values[0])
+                    lat = float(RESULTS.matches_df["lat"].values[0])
 
                     RESULTS.publish_data(i, lat, lon)
 
