@@ -137,4 +137,4 @@ class ImageProcessingClassifier:
 def color_detection(image):
     classifier = ImageProcessingClassifier(image)
     dominant_colors = classifier.get_dominant_color()
-    return dominant_colors
+    return dominant_colors[0][0],dominant_colors[1][0]
