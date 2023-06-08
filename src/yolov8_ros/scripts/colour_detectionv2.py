@@ -42,9 +42,9 @@ class ImageProcessingClassifier:
         self.image = image_path
         self.image = cv2.resize(self.image, (0, 0), fx=0.25, fy=0.25)
 
-    def get_dominant_color(self, k=4):
+    def get_dominant_color(self, k=3):
 
-        image_new = self.adjust_contrast(self.image, alpha=3, beta=1.5)
+        image_new = self.adjust_contrast(self.image, alpha=1, beta=1)
 
         blurred = cv2.GaussianBlur(image_new, (3, 3), 0)
 
@@ -60,14 +60,17 @@ class ImageProcessingClassifier:
         mask = np.zeros(gray.shape, dtype=np.uint8)
         cv2.drawContours(mask, [max_contour], -1, 255, cv2.FILLED)
 
-        new_image = np.zeros_like(self.image)
+        new_image = np.zeros_like(new_image)
         new_image[:] = (175, 145, 255)
 
         new_image[mask != 0] = self.image[mask != 0]
 
         new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
 
-        image_array = np.array(new_image)
+        # cv2.imshow('new_image', new_image)
+        # cv2.waitKey(0)
+
+        image_array = np.array(self.image)
 
         image_flat = image_array.reshape((image_array.shape[0] * image_array.shape[1]), image_array.shape[2])
 
@@ -78,9 +81,14 @@ class ImageProcessingClassifier:
         output_colours = []
         
         for i in range(len(colours)):
-            output_colours.append(self.predict_color(colours[i][0], colours[i][1], colours[i][2]), (kmeans.labels_).count(i))
+            predicted_colour = self.predict_color(colours[i][0], colours[i][1], colours[i][2])
+            if predicted_colour == 'Pink':
+                continue
+            output_colours.append([predicted_colour, list(kmeans.labels_).count(i)])
+
+        
+        return sorted(output_colours,key=lambda x: x[1], reverse=True)
             
-        return output_colours.sort(key = lambda row: row[1])
 
         ###############################################################################
         ##############MILAN############################################################
@@ -138,3 +146,8 @@ def color_detection(image):
     classifier = ImageProcessingClassifier(image)
     dominant_colors = classifier.get_dominant_color()
     return dominant_colors
+
+if __name__ == "__main__":
+    image = cv2.imread("10.png")
+    dominant_colors = color_detection(image)
+    print(dominant_colors)
