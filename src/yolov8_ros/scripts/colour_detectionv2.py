@@ -25,17 +25,17 @@ class ImageProcessingClassifier:
     }
     
     color_dict={
-        0 : 'Red',
-        1 : 'Green',
-        2 : 'Blue',
-        3 : 'Yellow',
-        4 : 'Orange',
-        5 : 'Pink',
-        6 : 'Purple',
-        7 : 'Brown',
-        8 : 'Grey',
-        9 : 'Black',
-        10 : 'White'
+        0 : 'RED',
+        1 : 'GREEN',
+        2 : 'BLUE',
+        3 : 'YELLOW',
+        4 : 'ORANGE',
+        5 : 'PINK',
+        6 : 'PURPLE',
+        7 : 'BROWN',
+        8 : 'GREY',
+        9 : 'BLACK',
+        10 : 'WHITE'
     }
 
     def __init__(self, image_path):
@@ -82,7 +82,7 @@ class ImageProcessingClassifier:
         
         for i in range(len(colours)):
             predicted_colour = self.predict_color(colours[i][0], colours[i][1], colours[i][2])
-            if predicted_colour == 'Pink':
+            if predicted_colour == 'PINK':
                 continue
             output_colours.append([predicted_colour, list(kmeans.labels_).count(i)])
 
