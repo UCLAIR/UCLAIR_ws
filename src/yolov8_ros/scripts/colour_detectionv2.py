@@ -60,7 +60,7 @@ class ImageProcessingClassifier:
         mask = np.zeros(gray.shape, dtype=np.uint8)
         cv2.drawContours(mask, [max_contour], -1, 255, cv2.FILLED)
 
-        new_image = np.zeros_like(new_image)
+        new_image = np.zeros_like(self.image)
         new_image[:] = (175, 145, 255)
 
         new_image[mask != 0] = self.image[mask != 0]
@@ -70,7 +70,7 @@ class ImageProcessingClassifier:
         # cv2.imshow('new_image', new_image)
         # cv2.waitKey(0)
 
-        image_array = np.array(self.image)
+        image_array = np.array(new_image)
 
         image_flat = image_array.reshape((image_array.shape[0] * image_array.shape[1]), image_array.shape[2])
 
