@@ -9,21 +9,7 @@ from tensorflow.keras import layers
 
 class ImageProcessingClassifier:
     model = tf.keras.models.load_model("colormodel_trained_90.h5")
-    
-    COLORS = {
-        "WHITE": (255, 255, 255),
-        "BLACK": (0, 0, 0),
-        "GRAY": (169, 169, 169),
-        "RED": (255, 0, 0),
-        "BLUE": (50, 140, 255),
-        "GREEN": (55, 170, 70),
-        "YELLOW": (255, 255, 0),
-        "PURPLE": (128, 0, 128),
-        "BROWN": (92, 64, 51),
-        "ORANGE": (255, 165, 0),
-        "PINK": (255, 145, 175)
-    }
-    
+
     color_dict={
         0 : 'RED',
         1 : 'GREEN',
@@ -44,7 +30,7 @@ class ImageProcessingClassifier:
 
     def get_dominant_color(self, k=3):
 
-        image_new = self.adjust_contrast(self.image, alpha=1, beta=1)
+        image_new = self.adjust_contrast(self.image, alpha=3, beta=1.5)
 
         blurred = cv2.GaussianBlur(image_new, (3, 3), 0)
 
@@ -67,9 +53,6 @@ class ImageProcessingClassifier:
 
         new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
 
-        # cv2.imshow('new_image', new_image)
-        # cv2.waitKey(0)
-
         image_array = np.array(new_image)
 
         image_flat = image_array.reshape((image_array.shape[0] * image_array.shape[1]), image_array.shape[2])
@@ -79,65 +62,29 @@ class ImageProcessingClassifier:
         colours = kmeans.cluster_centers_
         
         output_colours = []
-        
+
         for i in range(len(colours)):
-            predicted_colour = self.predict_color(colours[i][0], colours[i][1], colours[i][2])
+            predicted_colour = self.predict_colour(colours[i][0], colours[i][1], colours[i][2])
             if predicted_colour == 'PINK':
                 continue
-            output_colours.append([predicted_colour, list(kmeans.labels_).count(i)])
+            existing_colors = [color for color in output_colours if color[0] == predicted_colour]
+            if existing_colors:
+                existing_colors[0][1] += list(kmeans.labels_).count(i)
+            else:
+                output_colours.append([predicted_colour, list(kmeans.labels_).count(i)])
 
-        output_colours = list(set(tuple(colour) for colour in output_colours))
+        ordered = sorted(output_colours, key=lambda x: x[1], reverse=True)
+        colour_names = [color[0] for color in ordered[:2]]
 
-        output_colours = [list(colour) for colour in output_colours]
+        return colour_names
 
-        return sorted(output_colours, key=lambda x: x[1], reverse=True)
-            
-
-        ###############################################################################
-        ##############MILAN############################################################
-        # colour_names = []
-        # for colour in colours:
-        #     closest_name = ""
-        #     closest_distance = sys.float_info.max
-        #     for name, rgb in self.COLORS.items():
-        #         distance = self.compute_distance(rgb, colour)
-        #         if distance < closest_distance:
-        #             closest_name = name
-        #             closest_distance = distance
-        #     colour_names.append(closest_name)
-
-        # pixel_counts = []
-        # for i in range(k):
-        #     pixel_counts.append(list(kmeans.labels_).count(i))
-
-        # colour_map = {}
-        # for i in range(k):
-        #     if colour_names[i] != 'PINK':
-        #         colour_map[colour_names[i]] = pixel_counts[i]
-
-        # sorted_colours = sorted(colour_map.items(), key=lambda x: x[1], reverse=True)
-
-        # dominant_colours = []
-        # for colour in sorted_colours[:2]:
-        #     dominant_colours.append(colour[0])
-
-        # if len(dominant_colours) > 1:
-        #     return dominant_colours[0], dominant_colours[1]
-        # else:
-        #     return dominant_colours[0], 'null'
-        ##############MILAN############################################################
-
-    def predict_color(self, Red, Green, Blue):
+    def predict_colour(self, Red, Green, Blue):
         rgb = np.asarray((Red, Green, Blue)) #rgb tuple to numpy array
         input_rgb = np.reshape(rgb, (-1,3)) #reshaping as per input to ANN model
         color_class_confidence = self.model.predict(input_rgb) # Output of layer is in terms of Confidence of the 11 classes
         color_index = np.argmax(color_class_confidence, axis=1) #finding the color_class index from confidence
         color = self.color_dict[int(color_index)]
         return color
-    
-    @staticmethod
-    def compute_distance(rgb1, rgb2):
-        return np.linalg.norm(np.array(rgb1) - np.array(rgb2))
 
     @staticmethod
     def adjust_contrast(image, alpha, beta):
@@ -148,9 +95,4 @@ class ImageProcessingClassifier:
 def color_detection(image):
     classifier = ImageProcessingClassifier(image)
     dominant_colors = classifier.get_dominant_color()
-    return dominant_colors[0][0],dominant_colors[1][0]
-
-if __name__ == "__main__":
-    image = cv2.imread("10.png")
-    dominant_colors = color_detection(image)
-    print(dominant_colors)
+    return dominant_colors
