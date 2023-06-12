@@ -86,8 +86,11 @@ class ImageProcessingClassifier:
                 continue
             output_colours.append([predicted_colour, list(kmeans.labels_).count(i)])
 
-        
-        return sorted(output_colours,key=lambda x: x[1], reverse=True)
+        output_colours = list(set(tuple(colour) for colour in output_colours))
+
+        output_colours = [list(colour) for colour in output_colours]
+
+        return sorted(output_colours, key=lambda x: x[1], reverse=True)
             
 
         ###############################################################################
