@@ -12,8 +12,6 @@ from pygeodesy.geoids import GeoidPGM
 from sensor_msgs.msg import NavSatFix
 from mavros_msgs.msg import TerrainReport
 from std_msgs.msg import Float32, Float64
-from alphanumeric_detectionv2 import alphanumeric_detection2
-from colour_detectionv2 import color_detection
 from getpass import getuser
 import glob, os
 import numpy as np
