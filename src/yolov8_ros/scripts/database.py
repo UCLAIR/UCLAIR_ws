@@ -67,7 +67,7 @@ class Dataf:
         return publishing_data
 
     def publish_data(self, i, lat, lon):
-        pub_GPS = self.publish_float64multiarray_data([lat, lon])
+        pub_GPS = self.publish_float64multiarray_data([lat, lon, 25])
 
 
         if i == 0:

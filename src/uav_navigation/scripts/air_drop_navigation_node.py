@@ -88,31 +88,31 @@ class AirDropNavigation:
 
     def GPS_drop_1_sub_cb(self, msg):
         if msg.data == [0, 0]:
-            self.GPS_drop_1 = [38.3144226, -76.5446073]
+            self.GPS_drop_1 = [38.3144226, -76.5446073, 25]
         else:
             self.GPS_drop_1 = msg.data
 
     def GPS_drop_2_sub_cb(self, msg):
         if msg.data == [0, 0]:
-            self.GPS_drop_2 = [38.3144226, -76.5446073]
+            self.GPS_drop_2 = [38.3144226, -76.5446073, 25]
         else:
             self.GPS_drop_2 = msg.data
 
     def GPS_drop_3_sub_cb(self, msg):
         if msg.data == [0, 0]:
-            self.GPS_drop_3 = [38.3144226, -76.5446073]
+            self.GPS_drop_3 = [38.3144226, -76.5446073, 25]
         else:
             self.GPS_drop_3 = msg.data
 
     def GPS_drop_4_sub_cb(self, msg):
         if msg.data == [0, 0]:
-            self.GPS_drop_4 = [38.3144226, -76.5446073]
+            self.GPS_drop_4 = [38.3144226, -76.5446073, 25]
         else:
             self.GPS_drop_4 = msg.data
     
     def GPS_drop_5_sub_cb(self, msg):
         if msg.data == [0, 0]:
-            self.GPS_drop_5 = [38.3144226, -76.5446073]
+            self.GPS_drop_5 = [38.3144226, -76.5446073, 25]
         else:
             self.GPS_drop_5 = msg.data
 
