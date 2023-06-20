@@ -17,6 +17,20 @@ import glob, os
 import numpy as np
 
 
+def splitter():
+    file = open(f"/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/BOTTLESDATA.txt", "r")
+    data = file.read()
+    
+    shapes = []
+    
+    for line in data.split("\n"):
+        columns = line.split(",")
+        try:
+            shapes.append(columns[2])
+        except:
+            pass
+    return shapes
+
 class Yolov8:
     def __init__(self):
         self.source = rospy.get_param("~source")
@@ -29,6 +43,11 @@ class Yolov8:
         self.current_compass = Float64()
         # Subcribing the global_position/global topic to know the global location (GPS) of the UAV
         # The altitude is WGS84 Ellipsoid
+        
+        try:
+            self.shapes = splitter()
+        except:
+            pass
         
         self.current_global_position_sub = rospy.Subscriber(
             name="mavros/global_position/global",
@@ -95,7 +114,9 @@ class Yolov8:
                 cls = r.boxes.cls[x]
                 bb.Class = self.model.names[int(cls)]
                 x = x + 1
-                self.pred_pub.publish(bb)
+                
+                if bb.Class in self.shapes:
+                    self.pred_pub.publish(bb)
                 
                             
             
