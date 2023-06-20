@@ -11,13 +11,11 @@ class OCRDetectionClassifier:
     @staticmethod
     def image_processing(image):
 
-        img = cv2.medianBlur(image, 3)
+        img = cv2.GaussianBlur(image,(7,7),0)
 
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        contrast = cv2.convertScaleAbs(img, alpha=10, beta=-100)
 
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 121, 3)
-
-        return thresh
+        return contrast
 
     @staticmethod
     def center_crop(image, dim):
@@ -38,11 +36,11 @@ class OCRDetectionClassifier:
 
     def OCR_image_rotation(self):
 
-        resized_img = imutils.resize(self.image, 600, 600,inter=cv2.INTER_AREA)
+        resized_img = imutils.resize(self.image, 300, 300,inter=cv2.INTER_AREA)
 
         filtered_img = self.image_processing(resized_img)
 
-        cropped = self.center_crop(filtered_img, (300, 400))
+        cropped = self.center_crop(filtered_img, (150, 200))
 
         max_confidence = 0
 
