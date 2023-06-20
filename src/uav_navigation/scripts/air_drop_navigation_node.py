@@ -7,14 +7,14 @@ from std_msgs.msg import Bool, Float64MultiArray, Int16
 class AirDropNavigation:
     def __init__(self):
         self.in_air_drop_navigation = Bool()
-        self.GPS_drop_1 = [51.7054267, -0.1298417]
-        self.GPS_drop_2 = [51.7053768, -0.1296915]
+        self.GPS_drop_1 = []
+        self.GPS_drop_2 = []
         self.GPS_drop_3 = []
         self.GPS_drop_4 = []
         self.GPS_drop_5 = []
 
         self.drop_number_counter = Int16()
-        self.GPS_drop = [self.GPS_drop_1, self.GPS_drop_2]
+        self.GPS_drop = [self.GPS_drop_1, self.GPS_drop_2, self.GPS_drop_3, self.GPS_drop_4, self.GPS_drop_5]
 
         # ROS Publishers
         self.in_air_drop_navigation_pub = rospy.Publisher(
@@ -42,6 +42,36 @@ class AirDropNavigation:
             callback=self.drop_number_counter_sub_cb
         )
 
+        self.GPS_drop_1_sub = rospy.Subscriber(
+            name="GPS_drop_1",
+            data_class=Float64MultiArray,
+            callback=self.GPS_drop_1_sub_cb
+        )
+
+        self.GPS_drop_2_sub = rospy.Subscriber(
+            name="GPS_drop_2",
+            data_class=Float64MultiArray,
+            callback=self.GPS_drop_2_sub_cb
+        )
+
+        self.GPS_drop_3_sub = rospy.Subscriber(
+            name="GPS_drop_3",
+            data_class=Float64MultiArray,
+            callback=self.GPS_drop_3_sub_cb
+        )
+
+        self.GPS_drop_4_sub = rospy.Subscriber(
+            name="GPS_drop_4",
+            data_class=Float64MultiArray,
+            callback=self.GPS_drop_4_sub_cb
+        )
+
+        self.GPS_drop_5_sub = rospy.Subscriber(
+            name="GPS_drop_5",
+            data_class=Float64MultiArray,
+            callback=self.GPS_drop_5_sub_cb
+        )
+
     # Call back functions
 
     def global_navigation_sub_cb(self, msg):
@@ -56,6 +86,35 @@ class AirDropNavigation:
     def drop_number_counter_sub_cb(self, msg):
         self.drop_number_counter = msg
 
+    def GPS_drop_1_sub_cb(self, msg):
+        if msg.data == [0, 0]:
+            self.GPS_drop_1 = [38.3144226, -76.5446073]
+        else:
+            self.GPS_drop_1 = msg.data
+
+    def GPS_drop_2_sub_cb(self, msg):
+        if msg.data == [0, 0]:
+            self.GPS_drop_2 = [38.3144226, -76.5446073]
+        else:
+            self.GPS_drop_2 = msg.data
+
+    def GPS_drop_3_sub_cb(self, msg):
+        if msg.data == [0, 0]:
+            self.GPS_drop_3 = [38.3144226, -76.5446073]
+        else:
+            self.GPS_drop_3 = msg.data
+
+    def GPS_drop_4_sub_cb(self, msg):
+        if msg.data == [0, 0]:
+            self.GPS_drop_4 = [38.3144226, -76.5446073]
+        else:
+            self.GPS_drop_4 = msg.data
+    
+    def GPS_drop_5_sub_cb(self, msg):
+        if msg.data == [0, 0]:
+            self.GPS_drop_5 = [38.3144226, -76.5446073]
+        else:
+            self.GPS_drop_5 = msg.data
 
     # Convert the data into publisherable data for Float64MultiArray()
     def publish_float64multiarray_data(self, d):
