@@ -6,7 +6,7 @@ import pandas as pd
 import math
 from getpass import getuser
 import warnings
-import numpy as np
+import random
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -67,7 +67,7 @@ class Dataf:
         return publishing_data
 
     def publish_data(self, i, lat, lon):
-        pub_GPS = self.publish_float64multiarray_data([lat, lon, 25])
+        pub_GPS = self.publish_float64multiarray_data([lat, lon])
 
 
         if i == 0:
@@ -103,6 +103,9 @@ class Dataf:
                         self.dataf = self.dataf.append(row_dict, ignore_index=True)
                         
                         
+                        
+            
+
 if __name__ == "__main__":
     rospy.init_node('yolo_data_sorter')
     RESULTS=Dataf()
@@ -113,60 +116,52 @@ if __name__ == "__main__":
         RESULTS.matching_rows = pd.DataFrame(columns=RESULTS.column_names)
 
         for i, row in RESULTS.bottles_df.iterrows():
-            RESULTS.matches_df = RESULTS.dataf.loc[RESULTS.dataf['Class'] == row['Class']]
+            #print(row)
+            # Find the matching row(s) in dataf
+            RESULTS.matches_df = RESULTS.dataf.loc[(
+            (RESULTS.dataf['Class'] == row['Class']) &
+            (RESULTS.dataf['character'] == row['character']) &
+            (RESULTS.dataf['color_shape'] == row['color_shape']) &
+            (RESULTS.dataf['color_char'] == row['color_char']))]
+
             if RESULTS.matches_df.empty:
-                RESULTS.publish_data(i, 0, 0)
-            else:
-                RESULTS.matches_df = RESULTS.matches_df.loc[(RESULTS.matches_df['character'] == row['character'] &
-                                                        RESULTS.matches_df['color_shape'] == row['color_shape'] & 
-                                                        RESULTS.matches_df['color_char'] == row['color_char'])]
+                RESULTS.matches_df = RESULTS.dataf.loc[
+                (RESULTS.dataf['Class'] == row['Class']) &
+                (RESULTS.dataf['color_shape'] == row['color_shape'])
+                ]
+
                 if RESULTS.matches_df.empty:
-                    RESULTS.matches_df = RESULTS.matches_df.loc[(RESULTS.matches_df['character'] == row['character'] &
-                                                        RESULTS.matches_df['color_shape'] == row['color_shape'])
-                                                        or 
-                                                        (RESULTS.matches_df['character'] == row['character'] &
-                                                        RESULTS.matches_df['color_char'] == row['color_char'])
-                                                        or
-                                                        (RESULTS.matches_df['color_shape'] == row['color_shape'] &
-                                                        RESULTS.matches_df['color_char'] == row['color_char'])
-                                                        ]
-                    
-                    if RESULTS.matches_df.empty:
-                        RESULTS.matches_df = RESULTS.matches_df.loc[(RESULTS.matches_df['character'] == row['character'])
-                                                        or 
-                                                        (RESULTS.matches_df['color_char'] == row['color_char'])
-                                                        or
-                                                        (RESULTS.matches_df['color_shape'] == row['color_shape'])
-                                                        ]
-                        
-                        if RESULTS.matches_df.empty:
-                            RESULTS.publish_data(i, 0, 0)
-                        else:
-                            len = len(RESULTS.matches_df["long"])
-                            index = np.random.randint(0, len+1)
-                            lon = float(RESULTS.matches_df["long"].values[index])
-                            lat = float(RESULTS.matches_df["lat"].values[index])
-
-                            RESULTS.publish_data(i, lat, lon)
-                    else:
-                        len = len(RESULTS.matches_df["long"])
-                        index = np.random.randint(0, len+1)
-                        lon = float(RESULTS.matches_df["long"].values[index])
-                        lat = float(RESULTS.matches_df["lat"].values[index])
-
-                        RESULTS.publish_data(i, lat, lon)
+                    RESULTS.publish_data(i, 0, 0)
                 else:
+                    randomizer = random.randint(0,len(RESULTS.matches_df)-1)
                     lon = float(RESULTS.matches_df["long"].values[0])
                     lat = float(RESULTS.matches_df["lat"].values[0])
 
                     RESULTS.publish_data(i, lat, lon)
-                
 
+
+            else:
+                lon = float(RESULTS.matches_df["long"])
+                lat = float(RESULTS.matches_df["lat"])
+
+                RESULTS.publish_data(i, lat, lon)
+
+            # If there are no matches, continue to the next row
+            if not RESULTS.matches_df.empty:
+                #RESULTS.matching_rows=RESULTS.matching_rows.append({'Class': row['Class'], 'character': 'not found', 'color_shape': 'not found', 'color_char': 'not found', 'Distance': 0}, ignore_index=True)
+                RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
+                #continue
+            # Otherwise, find the row with the minimum Distance value
+            #min_dist_row = matches_df.loc[matches_df['Distance'].min()]
+        
+            # Add the matching row to the new dataframe
+            #RESULTS.matching_rows = RESULTS.matching_rows.append(RESULTS.matches_df, ignore_index=True)
+
+        RESULTS.matching_rows.to_csv(f'/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/database/list.csv')
 
 
 
 
 
     
-
 
