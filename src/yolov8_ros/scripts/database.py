@@ -6,6 +6,7 @@ import pandas as pd
 import math
 from getpass import getuser
 import warnings
+import random
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -132,6 +133,7 @@ if __name__ == "__main__":
                 if RESULTS.matches_df.empty:
                     RESULTS.publish_data(i, 0, 0)
                 else:
+                    randomizer = random.randint(0,len(RESULTS.matches_df)-1)
                     lon = float(RESULTS.matches_df["long"].values[0])
                     lat = float(RESULTS.matches_df["lat"].values[0])
 
