@@ -137,6 +137,7 @@ class GlobalNavigation:
             lon2 (Float): longitude of desired location
         """
         
+    
         dlat = abs(lat1 - lat2)
         dlon = abs(lon1 - lon2)
         
@@ -168,6 +169,8 @@ if __name__ == "__main__":
             time.sleep(5)
 
             global_path.pull_waypoints()
+
+            print(global_path.waypoints)
 
             if len(global_path.waypoints) != 0 and len(global_path.bottles) != 0:
                 rospy.loginfo(f"{len(global_path.waypoints)} Global Waypoints Recevied: {global_path.waypoints}")

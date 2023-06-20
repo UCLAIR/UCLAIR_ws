@@ -77,7 +77,7 @@ class Execution:
 if __name__ == "__main__":
     try:
 
-        rospy.init_node("uav_payload_cuffley_test_execute_node")
+        rospy.init_node("uav_SUAS_execute_node")
 
         uav = Navigation()
 
