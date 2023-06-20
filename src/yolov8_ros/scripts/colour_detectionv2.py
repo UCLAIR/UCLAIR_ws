@@ -5,10 +5,11 @@ import cv2
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from getpass import getuser
 
 
 class ImageProcessingClassifier:
-    model = tf.keras.models.load_model("colormodel_trained_90.h5")
+    model = tf.keras.models.load_model(f"/home/{getuser()}/UCLAIR_ws/src/yolov8_ros/scripts/colormodel_trained_90.h5")
 
     color_dict={
         0 : 'RED',
